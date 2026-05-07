@@ -46,6 +46,11 @@ class CraftService(private val plugin: OmniCraftPlugin, private val config: Conf
         locks.clear()
     }
 
+    fun cancelPlayer(playerId: UUID) {
+        countdowns.remove(playerId)?.cancel()
+        locks.unlockPlayer(playerId)
+    }
+
     private fun startCountdown(player: Player, recipe: CraftRecipe, mode: CraftClickMode, reopen: () -> Unit) {
         var remaining = recipe.craftTime.seconds.coerceAtLeast(1)
         player.closeInventory()

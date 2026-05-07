@@ -9,6 +9,8 @@ import org.bukkit.event.inventory.ClickType
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryDragEvent
 import org.bukkit.event.player.PlayerDropItemEvent
+import org.bukkit.event.player.PlayerMoveEvent
+import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.entity.Player
 
 class GuiListener(
@@ -51,7 +53,14 @@ class GuiListener(
                 }
             }
             GuiType.SETTINGS, GuiType.BROWSE -> {
-                if (event.slot == 49) menus.openMain(player)
+                if (event.slot == 49) {
+                    menus.openMain(player)
+                    return
+                }
+                if (holder.type == GuiType.BROWSE) {
+                    val category = plugin.configService.categories.getOrNull(categorySlotIndex(event.slot)) ?: return
+                    menus.openCategory(player, category.id)
+                }
             }
         }
     }
@@ -67,6 +76,19 @@ class GuiListener(
     fun onDrop(event: PlayerDropItemEvent) {
         if (event.player.openInventory.topInventory.holder is OmniHolder) {
             event.isCancelled = true
+        }
+    }
+
+    @EventHandler
+    fun onQuit(event: PlayerQuitEvent) {
+        craft.cancelPlayer(event.player.uniqueId)
+    }
+
+    @EventHandler
+    fun onMove(event: PlayerMoveEvent) {
+        if (event.from.blockX == event.to.blockX && event.from.blockY == event.to.blockY && event.from.blockZ == event.to.blockZ) return
+        if (plugin.config.getBoolean("craft-time.cancel-on-move", false)) {
+            craft.cancelPlayer(event.player.uniqueId)
         }
     }
 

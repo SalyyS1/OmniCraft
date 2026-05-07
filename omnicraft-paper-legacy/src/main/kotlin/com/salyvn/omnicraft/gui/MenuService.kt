@@ -114,7 +114,8 @@ class MenuService(
         holder.attach(inv)
         fill(inv)
         config.categories.forEachIndexed { index, category ->
-            inv.setItem(10 + index, named(Material.CHEST, "#7cf5ff${category.title}", listOf("#d6f7ffClick to browse/edit.")))
+            val slot = 10 + index + (index / 7) * 2
+            if (slot < 45) inv.setItem(slot, named(Material.CHEST, "#7cf5ff${category.title}", listOf("#d6f7ffClick to browse/edit.")))
         }
         inv.setItem(49, named(Material.BARRIER, "#ff6961Delete Mode: OFF", listOf("#8ea3b0Confirm before deleting recipes.")))
         player.openInventory(inv)

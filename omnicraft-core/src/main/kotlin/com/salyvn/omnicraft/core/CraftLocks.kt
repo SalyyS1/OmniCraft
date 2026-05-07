@@ -17,6 +17,10 @@ class CraftLocks(private val timeoutMillis: Long = 10_000) {
         locks.remove("$playerId:$recipeId")
     }
 
+    fun unlockPlayer(playerId: UUID) {
+        locks.keys.removeIf { it.startsWith("$playerId:") }
+    }
+
     fun throttle(playerId: UUID, cooldownMillis: Long): Boolean {
         val now = System.currentTimeMillis()
         val previous = lastClick.put(playerId, now) ?: return true
