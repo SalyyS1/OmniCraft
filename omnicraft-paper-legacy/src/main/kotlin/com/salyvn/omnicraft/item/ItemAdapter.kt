@@ -36,7 +36,7 @@ object ItemAdapter {
     fun fromCraftItem(item: CraftItem, amountOverride: Int? = null): ItemStack {
         val amount = (amountOverride ?: item.amount).coerceAtLeast(1)
         if (item.mode == ItemMode.MMOITEMS) {
-            hooks?.mmoItem(item.mmoType, item.mmoId, amount)?.let { return it }
+            hooks?.mmoItem(item.mmoType, item.mmoId, amount)?.let { return applyAdvancedEnchantments(it, item) }
         }
         val material = Material.matchMaterial(item.material) ?: Material.STONE
         val stack = ItemStack(material, amount)
@@ -47,12 +47,20 @@ object ItemAdapter {
             item.uid?.let { meta.persistentDataContainer.set(uidKey, PersistentDataType.STRING, it) }
             stack.itemMeta = meta
         }
-        return stack
+        return applyAdvancedEnchantments(stack, item)
     }
 
     private fun risk(item: ItemStack): ItemRisk {
-        val enchantCount = item.enchantments.size
+        val enchantCount = item.enchantments.size + (hooks?.advancedEnchantments(item)?.size ?: 0)
         val lore = item.itemMeta?.lore()?.size ?: 0
         return ItemRisk(enchantCount = enchantCount, gemstoneCount = 0, upgradeLevel = if (lore > 0) 1 else 0)
+    }
+
+    private fun applyAdvancedEnchantments(stack: ItemStack, item: CraftItem): ItemStack {
+        var result = stack
+        for (enchant in item.advancedEnchantments) {
+            result = hooks?.applyAdvancedEnchant(result, enchant.id, enchant.level) ?: result
+        }
+        return result
     }
 }

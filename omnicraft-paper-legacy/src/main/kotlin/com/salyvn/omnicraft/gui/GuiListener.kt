@@ -37,10 +37,7 @@ class GuiListener(
                     return
                 }
                 val category = plugin.configService.category(holder.categoryId ?: return) ?: return
-                val recipe = category.recipes.firstOrNull { recipe ->
-                    event.currentItem?.itemMeta?.displayName() == event.currentItem?.itemMeta?.displayName() &&
-                        recipe.displayName.isNotBlank()
-                } ?: category.recipes.getOrNull(categorySlotIndex(event.slot)) ?: return
+                val recipe = category.recipes.filterNot { it.options.hidden }.getOrNull(categorySlotIndex(event.slot)) ?: return
                 if (event.click == ClickType.RIGHT) menus.toggleFavorite(player, recipe) else menus.openRecipe(player, recipe)
             }
             GuiType.RECIPE -> {

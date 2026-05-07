@@ -12,6 +12,8 @@ import com.salyvn.omnicraft.core.CraftTime
 import com.salyvn.omnicraft.core.ExtractionMode
 import com.salyvn.omnicraft.core.ExtractionPolicy
 import com.salyvn.omnicraft.core.ItemMode
+import com.salyvn.omnicraft.core.AdvancedEnchant
+import com.salyvn.omnicraft.core.RecipeOptions
 import org.bukkit.Material
 import org.bukkit.configuration.file.YamlConfiguration
 import java.io.File
@@ -60,6 +62,7 @@ class ConfigService(private val plugin: OmniCraftPlugin) {
                 if (recipe.ingredients.size > 25) issues += "Recipe '${category.id}:${recipe.id}' has more than 25 ingredients"
                 if (recipe.output.amount <= 0) issues += "Recipe '${category.id}:${recipe.id}' output amount must be positive"
                 if (recipe.extraction.successRate !in 0.0..1.0) issues += "Recipe '${category.id}:${recipe.id}' extraction success rate must be 0..1"
+                if (recipe.output.advancedEnchantments.any { it.id.isBlank() }) issues += "Recipe '${category.id}:${recipe.id}' has blank AdvancedEnchantments id"
             }
         }
         return issues
@@ -130,6 +133,14 @@ class ConfigService(private val plugin: OmniCraftPlugin) {
             limits = CraftLimits(
                 daily = yaml.getInt("limits.daily", -1),
                 weekly = yaml.getInt("limits.weekly", -1)
+            ),
+            options = RecipeOptions(
+                enabled = yaml.getBoolean("options.enabled", true),
+                hidden = yaml.getBoolean("options.hidden", false),
+                rareBroadcast = yaml.getBoolean("options.rare-broadcast", false),
+                sourceHints = yaml.getConfigurationSection("options.source-hints")?.getKeys(false)
+                    ?.associateWith { key -> yaml.getString("options.source-hints.$key", "") ?: "" }
+                    ?: emptyMap()
             )
         )
     }
@@ -145,8 +156,37 @@ class ConfigService(private val plugin: OmniCraftPlugin) {
             name = yaml.getString("$path.name"),
             lore = yaml.getStringList("$path.lore"),
             mmoType = yaml.getString("$path.type"),
-            mmoId = yaml.getString("$path.id")
+            mmoId = yaml.getString("$path.id"),
+            advancedEnchantments = loadAdvancedEnchantments(yaml, "$path.enchantments.advanced") +
+                loadAdvancedEnchantments(yaml, "$path.advanced-enchantments")
         )
+    }
+
+    private fun loadAdvancedEnchantments(yaml: YamlConfiguration, path: String): List<AdvancedEnchant> {
+        val section = yaml.getConfigurationSection(path)
+        if (section != null) {
+            return section.getKeys(false).mapNotNull { id ->
+                val level = yaml.getInt("$path.$id.level", yaml.getInt("$path.$id", 1))
+                AdvancedEnchant(
+                    id = id,
+                    level = level.coerceAtLeast(1),
+                    successRate = yaml.getDouble("$path.$id.success-rate", 100.0).coerceIn(0.0, 100.0),
+                    destroyRate = yaml.getDouble("$path.$id.destroy-rate", 0.0).coerceIn(0.0, 100.0),
+                    tier = yaml.getString("$path.$id.tier")
+                )
+            }
+        }
+        return yaml.getStringList(path).mapNotNull { raw ->
+            val parts = raw.split(":", limit = 4)
+            val id = parts.getOrNull(0)?.trim().orEmpty()
+            if (id.isBlank()) return@mapNotNull null
+            AdvancedEnchant(
+                id = id,
+                level = parts.getOrNull(1)?.trim()?.toIntOrNull()?.coerceAtLeast(1) ?: 1,
+                successRate = parts.getOrNull(2)?.trim()?.toDoubleOrNull()?.coerceIn(0.0, 100.0) ?: 100.0,
+                destroyRate = parts.getOrNull(3)?.trim()?.toDoubleOrNull()?.coerceIn(0.0, 100.0) ?: 0.0
+            )
+        }
     }
 
     private fun extractionMode(value: String?): ExtractionMode {

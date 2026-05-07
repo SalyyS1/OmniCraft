@@ -88,6 +88,11 @@ class CraftService(
         try {
             val check = check(player, recipe)
             val crafts = calculator.requestedAmount(recipe, mode, check.craftableAmount)
+            if (!recipe.options.enabled) {
+                audit.record(player, recipe, 0, "fail", "disabled")
+                player.sendMessage(Text.c(config.message("errors.recipe-disabled", "#ff6961This recipe is disabled.")))
+                return
+            }
             if (!check.allowed || crafts <= 0) {
                 audit.record(player, recipe, 0, "fail", "requirements")
                 player.sendMessage(Text.c(config.message("errors.requirements", "#ff6961You do not meet the requirements.")))
@@ -132,6 +137,12 @@ class CraftService(
 
             usage.record(player, recipe, crafts)
             audit.record(player, recipe, crafts, "success")
+            if (recipe.options.rareBroadcast && plugin.config.getBoolean("history.log-rare-recipes", true)) {
+                plugin.server.broadcast(Text.c(config.message("broadcast.rare-craft", "#ffd166{player} crafted {amount}x {item}.")
+                    .replace("{player}", player.name)
+                    .replace("{amount}", crafts.toString())
+                    .replace("{item}", recipe.displayName)))
+            }
             plugin.logger.info("craft success player=${player.name} recipe=${recipe.categoryId}:${recipe.id} amount=$crafts")
             player.sendMessage(Text.c(config.message("success.crafted", "#71f79fCrafted {amount}x {item}.")
                 .replace("{amount}", crafts.toString())
@@ -149,7 +160,16 @@ class CraftService(
         level = player.level,
         money = hooks.balance(player),
         deniedConditions = hooks.deniedConditions(player, recipe.requirements.papiConditions)
+            .plus(missingHookFailures(recipe))
     )
+
+    private fun missingHookFailures(recipe: CraftRecipe): List<String> {
+        val requiresAe = recipe.output.advancedEnchantments.isNotEmpty() ||
+            recipe.ingredients.any { it.item.advancedEnchantments.isNotEmpty() }
+        if (!requiresAe) return emptyList()
+        val strict = plugin.config.getBoolean("advanced-enchantments.missing-hook-disables-ae-recipes", false)
+        return if (strict && !hooks.enabled("AdvancedEnchantments")) listOf("AdvancedEnchantments") else emptyList()
+    }
 
     private fun rollback(player: Player, removed: List<Pair<Int, ItemStack>>) {
         for ((slot, item) in removed) {

@@ -30,6 +30,26 @@ Useful API points:
 - MMOItems crafting stations support delayed crafting queues and MMO item outputs.
 - OmniCraft differs by prioritizing server-side transaction safety, ingredient risk warnings, MMOItems-style browsing, and one-file-per-output recipes.
 
+## AdvancedEnchantments API
+
+Sources reviewed:
+
+- `https://ae.advancedplugins.net/for-developers/plugin-api`
+- `https://www.spigotmc.org/resources/advancedenchantments-api.76819/`
+
+Useful API points:
+
+- The API class is `net.advancedplugins.ae.api.AEAPI`.
+- `AEAPI.applyEnchant(enchantName, enchantLevel, itemStack)` returns a modified `ItemStack`.
+- Events are exposed under `net.advancedplugins.ae.api` and `net.advancedplugins.ae.impl.effects.api`.
+- OmniCraft uses reflection for AE calls so `AdvancedEnchantments` remains a real softdepend.
+
+OmniCraft integration:
+
+- `output.enchantments.advanced` applies AE enchants to crafted outputs.
+- AE enchants on player items count as risk when selecting which base item to consume first.
+- `advanced-enchantments.missing-hook-disables-ae-recipes` can force AE recipes to fail when the hook is missing.
+
 ## Safety Decisions
 
 - GUI preview items are display only.

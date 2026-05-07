@@ -1,44 +1,92 @@
-# Wiki OmniCraft
+# Wiki sử dụng OmniCraft
 
 [English](../en/overview.md)
 
-## Tổng quan
+## OmniCraft là gì
 
-OmniCraft là plugin Paper tạo trạm chế tạo kiểu MMO. Plugin có menu category, preview recipe, yêu cầu nguyên liệu, permission, level, craft countdown tùy chọn và transaction server-side.
+OmniCraft là plugin trạm chế tạo cho server Paper RPG. Member mở menu, chọn category, xem nguyên liệu cần có, rồi craft bằng chuột trái, chuột phải hoặc shift click.
 
-## Cài đặt
+## Hướng dẫn cho member
 
-1. Build project.
-2. Dùng `OmniCraft-legacy.jar` cho Paper 1.20-1.21.11.
-3. Dùng `OmniCraft-26.jar` cho nhánh adapter 26.x.
-4. Khởi động server một lần.
-5. Chỉnh `config.yml`, `messages.yml` và file trong `category/`.
+Dùng một trong các lệnh:
 
-```powershell
-.\gradlew.bat clean build
+| Lệnh | Công dụng |
+| --- | --- |
+| `/oc` | Mở main menu |
+| `/ocraft` | Mở main menu |
+| `/craft` | Mở main menu |
+| `/oc open <category>` | Mở thẳng một category |
+
+Vật phẩm nguyên liệu giữ nguyên tên và lore gốc. OmniCraft chỉ thêm một dòng requirement. Đỏ là thiếu. Xanh là đủ.
+
+## Lệnh admin
+
+| Lệnh | Công dụng |
+| --- | --- |
+| `/oc settings` | Mở GUI settings |
+| `/oc browse` | Browse recipe |
+| `/oc reload` | Reload file |
+| `/oc validate` | Kiểm tra lỗi recipe |
+| `/oc debug recipe <id>` | Test recipe theo player hiện tại |
+| `/oc export <category>` | Export recipe category |
+| `/oc import <category> <file.zip>` | Import recipe category |
+
+## Permission
+
+| Permission | Công dụng |
+| --- | --- |
+| `omnicraft.use` | Mở menu |
+| `omnicraft.category.<id>` | Vào category |
+| `omnicraft.open.<id>` | Mở thẳng category |
+| `omnicraft.admin` | Browse admin, import, export |
+| `omnicraft.settings` | Menu settings |
+| `omnicraft.reload` | Reload file |
+| `omnicraft.debug` | Debug recipe |
+| `omnicraft.validate` | Validate config |
+
+## Cấu trúc file
+
+```text
+plugins/OmniCraft/
+  config.yml
+  messages.yml
+  category/
+    weapons/
+      steel_sword.yml
+  data/
+    usage.yml
+  logs/
+    craft-history.log
+  exports/
 ```
 
-## Lệnh
+## Các file config
 
-| Lệnh | Quyền | Công dụng |
-| --- | --- | --- |
-| `/oc` | `omnicraft.use` | Mở main menu |
-| `/oc open <category>` | `omnicraft.category.<id>` hoặc `omnicraft.open.<id>` | Mở category |
-| `/oc settings` | `omnicraft.settings` | Mở menu settings |
-| `/oc browse` | `omnicraft.admin` | Browse recipe |
-| `/oc validate` | `omnicraft.validate` | Kiểm tra recipe đã load |
-| `/oc export <category>` | `omnicraft.admin` | Export recipe category |
-| `/oc import <category> <file.zip>` | `omnicraft.admin` | Import recipe category |
+`config.yml` chỉnh menu, số lượng craft theo click, countdown, chống dupe, AdvancedEnchantments, log history, editor và tính năng tiện ích.
+
+`messages.yml` chỉnh toàn bộ GUI line, title, warning, error, success message và broadcast.
+
+Mỗi file recipe là một thành phẩm.
 
 ## Ví dụ recipe
 
 ```yaml
+id: steel_blade
+display:
+  name: "#7cf5ffSteel Blade"
 output:
   mode: MMOITEMS
   material: DIAMOND_SWORD
   amount: 1
   type: SWORD
   id: STEEL_BLADE
+  enchantments:
+    advanced:
+      telepathy:
+        level: 1
+        success-rate: 100.0
+        destroy-rate: 0.0
+        tier: COMMON
 ingredients:
   base:
     amount: 1
@@ -63,9 +111,26 @@ extraction:
   enchant: EXTRACT
   gemstone: EXTRACT
   level: DESTROY
-  success-rate: 0.75
+  success-rate: 1.0
+limits:
+  daily: 5
+  weekly: 20
+options:
+  enabled: true
+  hidden: false
+  rare-broadcast: true
+  source-hints:
+    essence: "Rơi từ boss dungeon."
 ```
 
-## Cơ chế chống dupe
+## AdvancedEnchantments
 
-OmniCraft hủy click GUI, bỏ qua cursor item, chặn click type rủi ro, khóa transaction theo player/recipe, scan inventory server-side và rollback nếu không thể phát output.
+OmniCraft có thể apply custom enchant vào output bằng AdvancedEnchantments. Dùng `output.enchantments.advanced`. Nếu server không cài AdvancedEnchantments, OmniCraft có thể bỏ qua custom enchant hoặc disable recipe đó theo `advanced-enchantments.missing-hook-disables-ae-recipes`.
+
+## Chống dupe
+
+OmniCraft không tin click từ client. GUI click bị cancel, click type rủi ro bị bỏ qua, inventory được scan server-side, mỗi player/recipe có lock riêng, nguyên liệu bị trừ trước khi phát output, và rollback nếu không phát được output.
+
+## Xử lý lỗi
+
+Chạy `/oc validate` sau khi sửa recipe. Chạy `/oc reload` sau khi sửa xong. Xem `logs/craft-history.log` để biết craft thành công, fail hoặc rollback vì lý do gì.

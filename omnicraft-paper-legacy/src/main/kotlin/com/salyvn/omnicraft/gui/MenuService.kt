@@ -48,7 +48,7 @@ class MenuService(
         val inv = Bukkit.createInventory(holder, 54, Text.c("#7cf5ff${category.title}"))
         holder.attach(inv)
         fill(inv)
-        category.recipes.forEachIndexed { index, recipe ->
+        category.recipes.filterNot { it.options.hidden }.forEachIndexed { index, recipe ->
             val slot = 10 + index + (index / 7) * 2
             if (slot < 45) inv.setItem(slot, recipeIcon(player, recipe))
         }
@@ -91,7 +91,7 @@ class MenuService(
         inv.setItem(45, named(Material.LIME_DYE, "#71f79fCraft x${recipe.craft.leftAmount}", listOf("#d6f7ffLeft click.")))
         inv.setItem(46, named(Material.EMERALD, "#71f79fCraft x${recipe.craft.rightAmount}", listOf("#d6f7ffRight click.")))
         inv.setItem(47, named(Material.NETHER_STAR, "#71f79fCraft Max", listOf("#d6f7ffShift click.")))
-        inv.setItem(48, named(Material.BOOK, "#7cf5ffMissing Materials", missingLore(check.missing)))
+        inv.setItem(48, named(Material.BOOK, "#7cf5ffMissing Materials", missingLore(check.missing, recipe)))
         inv.setItem(49, named(Material.ARROW, "#d6f7ffBack", listOf("#8ea3b0Return to category.")))
         player.openInventory(inv)
     }
@@ -165,9 +165,13 @@ class MenuService(
         ))
     }
 
-    private fun missingLore(missing: Map<String, Int>): List<String> {
+    private fun missingLore(missing: Map<String, Int>, recipe: CraftRecipe): List<String> {
         if (missing.isEmpty()) return listOf("#71f79fAll materials ready.")
-        return missing.map { "#ff6961${it.key}: missing ${it.value}" }
+        return missing.flatMap {
+            val lines = mutableListOf("#ff6961${it.key}: missing ${it.value}")
+            recipe.options.sourceHints[it.key]?.takeIf { hint -> hint.isNotBlank() }?.let { hint -> lines += "#8ea3b0$hint" }
+            lines
+        }
     }
 
     private fun fill(inv: Inventory) {

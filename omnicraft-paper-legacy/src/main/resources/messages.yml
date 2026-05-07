@@ -1,22 +1,78 @@
+# GUI titles and labels.
 gui:
   main-title: "#7cf5ffOmniCraft"
+  category-title: "#7cf5ff{category}"
+  recipe-title: "#7cf5ff{recipe}"
+  settings-title: "#7cf5ffOmniCraft Settings"
+  browse-title: "#7cf5ffRecipe Browser"
+  back: "#d6f7ffBack"
+  search: "#7cf5ffSearch"
+  favorites: "#ffd166Favorites"
+  craftable-only: "#7cf5ffCraftable Only"
+  missing-materials: "#7cf5ffMissing Materials"
+  risk-warning: "#ffd166Risk Warning"
+  delete-mode-off: "#ff6961Delete Mode: OFF"
   requirement-line: "{color}{current}/{required}"
 
+# Requirement status lines.
+requirements:
+  material-ok: "#71f79fOK Materials"
+  material-missing: "#ff6961X Materials"
+  craftable: "#71f79fOK Craftable"
+  not-craftable: "#ff6961X Missing requirements"
+  permission: "#ff6961You don't have permission to craft {item_name}"
+  level: "#ff6961Need {amount} more levels"
+  money: "#ff6961Need {amount} money"
+  condition: "#ff6961Condition failed: {condition}"
+  available-crafts: "#8ea3b0Available crafts: {amount}"
+
+# Risk and extraction messages.
+risk:
+  enchant: "#d6f7ffEnchant: {mode}"
+  gemstone: "#d6f7ffGemstone: {mode}"
+  level: "#d6f7ffLevel: {mode}"
+  priority: "#8ea3b0Items with fewer risks are consumed first."
+  advanced-enchantments: "#ffd166AdvancedEnchantments detected: {amount}"
+  extraction-rate: "#d6f7ffExtraction success: {rate}%"
+
+# Craft countdown title.
 titles:
   crafting: "#7cf5ffCrafting"
   countdown: "#d6f7ffFinishing in {seconds}s"
+  cancelled: "#ff6961Craft cancelled"
 
+# Error messages.
 errors:
   no-permission: "#ff6961No permission."
   no-category-permission: "#ff6961You cannot open this category."
   category-not-found: "#ff6961Category not found."
+  recipe-not-found: "#ff6961Recipe not found."
   too-fast: "#ff6961Please slow down."
   blocked-gamemode: "#ff6961You cannot craft in this game mode."
   locked: "#ff6961This recipe is already processing."
   requirements: "#ff6961You do not meet the requirements."
+  recipe-disabled: "#ff6961This recipe is disabled."
   inventory-full: "#ff6961Inventory full. Craft cancelled."
   limit: "#ff6961Craft limit reached."
+  missing-hook: "#ff6961Required hook is missing: {hook}"
+  unsafe-zip: "#ff6961Unsafe archive entry blocked."
 
+# Success messages.
 success:
   crafted: "#71f79fCrafted {amount}x {item}."
   reload: "#71f79fOmniCraft reloaded."
+  validate-clean: "#71f79fOmniCraft config looks clean."
+  favorite-updated: "#ffd166Favorite updated: {item}"
+  exported: "#71f79fExported {category} to {file}."
+  imported: "#71f79fImported {category} from {file}."
+
+# Server broadcasts.
+broadcast:
+  rare-craft: "#ffd166{player} crafted {amount}x {item}."
+
+# Admin command usage.
+usage:
+  open: "#ff6961Usage: /oc open <category>"
+  export: "#ff6961Usage: /oc export <category>"
+  import: "#ff6961Usage: /oc import <category> <file.zip>"
+  debug: "#ff6961Usage: /oc debug recipe <id>"

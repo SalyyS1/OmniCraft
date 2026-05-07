@@ -1,46 +1,67 @@
 # OmniCraft
 
-OmniCraft is a Paper plugin for MMO-style crafting stations. It opens category-based crafting menus, validates every craft from the server inventory, and keeps recipe configuration in readable YAML files.
+OmniCraft is a Paper crafting station plugin for RPG/MMO servers. It gives players a clean category menu, shows exact material requirements, supports MMOItems and AdvancedEnchantments, and processes every craft with server-side anti-dupe checks.
 
-## Status
+## Server Use
 
-This repository contains the first implementation pass for OmniCraft v1. The stable target is Paper 1.20-1.21.11 through the legacy module. A separate 26.x module is kept so adapter differences can be isolated when that API line is finalized.
+Put the correct OmniCraft jar in `plugins/`, start the server once, then edit:
 
-## Modules
-
-| Module | Purpose |
-| --- | --- |
-| `omnicraft-core` | Recipe models, matching, craft calculation, lock helpers |
-| `omnicraft-paper-legacy` | Paper plugin implementation for 1.20-1.21.11 |
-| `omnicraft-paper-26` | Paper 26.x adapter build |
+- `plugins/OmniCraft/config.yml`
+- `plugins/OmniCraft/messages.yml`
+- `plugins/OmniCraft/category/<category>/<recipe>.yml`
 
 ## Commands
 
 | Command | Permission | Description |
 | --- | --- | --- |
-| `/omnicraft`, `/oc`, `/ocraft`, `/craft` | `omnicraft.use` | Open the main crafting menu |
+| `/omnicraft`, `/oc`, `/ocraft`, `/craft` | `omnicraft.use` | Open main crafting menu |
 | `/oc open <category>` | `omnicraft.category.<id>` or `omnicraft.open.<id>` | Open a category directly |
-| `/oc settings` | `omnicraft.settings` | Open the settings menu |
-| `/oc browse` | `omnicraft.admin` | Open the admin recipe browser |
-| `/oc reload` | `omnicraft.reload` | Reload config and recipes |
+| `/oc settings` | `omnicraft.settings` | Open settings menu |
+| `/oc browse` | `omnicraft.admin` | Browse admin recipe menu |
+| `/oc reload` | `omnicraft.reload` | Reload config, messages, recipes |
 | `/oc debug recipe <id>` | `omnicraft.debug` | Dry-run a recipe check |
-| `/oc validate` | `omnicraft.validate` | Validate loaded categories and recipes |
-| `/oc export <category>` | `omnicraft.admin` | Export category recipes to a zip |
-| `/oc import <category> <file.zip>` | `omnicraft.admin` | Import category recipes from `plugins/OmniCraft/exports` |
+| `/oc validate` | `omnicraft.validate` | Validate loaded recipes |
+| `/oc export <category>` | `omnicraft.admin` | Export a category zip |
+| `/oc import <category> <file.zip>` | `omnicraft.admin` | Import a category zip from `exports/` |
 
-## Configuration
+## Main Features
 
-Default files:
+- Category-based craft GUI.
+- Direct category open commands.
+- 5x5 ingredient grid.
+- Requirement lines preserve original item name/lore and disable italic text.
+- Material preview supports stack amounts above 64 inside GUI.
+- Left/right/shift craft amounts.
+- Optional title countdown before craft.
+- MMOItems output and item matching.
+- AdvancedEnchantments output enchant application.
+- Vault money requirement.
+- PlaceholderAPI conditions.
+- Daily and weekly craft limits.
+- Rare craft broadcast.
+- Craft history log.
+- Config validation and category import/export.
+- Server-side anti-dupe transaction flow with rollback.
 
-- `config.yml`: menu layout, craft amount, cooldown, countdown, anti-dupe settings, extraction defaults.
-- `messages.yml`: all player-facing text and GUI labels.
-- `category/<category>/<recipe>.yml`: one recipe per file.
+## Recipe API Shape
 
-The message loader also accepts `messange.yml` as a fallback for typo compatibility.
+```yaml
+output:
+  mode: MMOITEMS
+  material: DIAMOND_SWORD
+  amount: 1
+  type: SWORD
+  id: STEEL_BLADE
+  enchantments:
+    advanced:
+      telepathy:
+        level: 1
+        success-rate: 100.0
+        destroy-rate: 0.0
+        tier: COMMON
+```
 
-## API Notes
-
-Core classes are in `com.salyvn.omnicraft.core`:
+## Public Core Classes
 
 - `CraftRecipe`
 - `CraftItem`
@@ -49,21 +70,9 @@ Core classes are in `com.salyvn.omnicraft.core`:
 - `CraftMatcher`
 - `CraftLocks`
 
-Paper code should call `CraftService.craft(player, recipe, clickMode)` instead of removing items directly. The service locks the player and recipe, scans server-side inventory, removes ingredients, gives outputs, and rolls back when output cannot be added.
-
-## Build
-
-```powershell
-.\gradlew.bat clean build
-```
-
-Artifacts:
-
-- `omnicraft-paper-legacy/build/libs/OmniCraft-legacy.jar`
-- `omnicraft-paper-26/build/libs/OmniCraft-26.jar`
-
 ## Wiki
 
-- Static bilingual page: `docs/wiki/index.html`
-- Markdown wiki: `docs/wiki/en/overview.md` and `docs/wiki/vi/overview.md`
+- Web wiki: `docs/wiki/index.html`
+- English markdown: `docs/wiki/en/overview.md`
+- Vietnamese markdown: `docs/wiki/vi/overview.md`
 - Research notes: `docs/research.md`

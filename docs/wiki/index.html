@@ -10,8 +10,8 @@
   <header class="topbar">
     <div>
       <p class="eyebrow">OmniCraft Wiki</p>
-      <h1 data-i18n="title">Crafting stations for MMO servers</h1>
-      <p data-i18n="subtitle">A compact guide for installing, configuring, and operating OmniCraft safely.</p>
+      <h1 data-i18n="title">Crafting station guide</h1>
+      <p data-i18n="subtitle">Player usage, admin setup, recipe files, integrations, and anti-dupe safety.</p>
     </div>
     <div class="language">
       <button data-lang="en">English</button>
@@ -21,75 +21,87 @@
 
   <main class="layout">
     <nav class="sidebar">
-      <a href="#overview" data-i18n="navOverview">Overview</a>
-      <a href="#install" data-i18n="navInstall">Installation</a>
-      <a href="#commands" data-i18n="navCommands">Commands</a>
-      <a href="#recipes" data-i18n="navRecipes">Recipes</a>
-      <a href="#safety" data-i18n="navSafety">Anti-dupe safety</a>
-      <a href="#admin" data-i18n="navAdmin">Admin tools</a>
-      <a href="#troubleshooting" data-i18n="navTrouble">Troubleshooting</a>
+      <a href="#players" data-i18n="navPlayers">Players</a>
+      <a href="#admins" data-i18n="navAdmins">Admins</a>
+      <a href="#files" data-i18n="navFiles">Files</a>
+      <a href="#recipe" data-i18n="navRecipe">Recipe YAML</a>
+      <a href="#hooks" data-i18n="navHooks">Integrations</a>
+      <a href="#safety" data-i18n="navSafety">Anti-dupe</a>
+      <a href="#trouble" data-i18n="navTrouble">Troubleshooting</a>
     </nav>
 
     <section class="content">
-      <article id="overview" class="canvas accent-cyan">
-        <span class="badge" data-i18n="badgeCore">Core</span>
-        <h2 data-i18n="overviewTitle">What OmniCraft does</h2>
-        <p data-i18n="overviewBody">OmniCraft creates MMOItems-style crafting menus with category browsing, recipe previews, requirements, craft delays, and server-side transactions.</p>
-      </article>
-
-      <article id="install" class="canvas accent-green">
-        <span class="badge" data-i18n="badgeSetup">Setup</span>
-        <h2 data-i18n="installTitle">Installation</h2>
-        <ol>
-          <li data-i18n="install1">Build the jar with Gradle.</li>
-          <li data-i18n="install2">Place the matching jar in the server plugins folder.</li>
-          <li data-i18n="install3">Start the server once, then edit config files.</li>
-        </ol>
-        <pre><code>.\gradlew.bat clean build</code></pre>
-      </article>
-
-      <article id="commands" class="canvas accent-gold">
-        <span class="badge" data-i18n="badgeAccess">Access</span>
-        <h2 data-i18n="commandsTitle">Commands and permissions</h2>
+      <article id="players" class="canvas accent-cyan">
+        <span class="badge" data-i18n="badgePlayer">Player</span>
+        <h2 data-i18n="playersTitle">Open and craft</h2>
+        <p data-i18n="playersBody">Use /oc, /ocraft, or /craft. Red requirement lines mean missing materials. Green lines mean ready.</p>
         <table>
-          <tr><th>Command</th><th>Permission</th></tr>
-          <tr><td>/oc</td><td>omnicraft.use</td></tr>
-          <tr><td>/oc open &lt;category&gt;</td><td>omnicraft.category.&lt;id&gt;</td></tr>
-          <tr><td>/oc settings</td><td>omnicraft.settings</td></tr>
-          <tr><td>/oc browse</td><td>omnicraft.admin</td></tr>
+          <tr><th>Command</th><th data-i18n="use">Use</th></tr>
+          <tr><td>/oc</td><td data-i18n="openMain">Open main menu</td></tr>
+          <tr><td>/oc open weapons</td><td data-i18n="openCategory">Open a category</td></tr>
         </table>
       </article>
 
-      <article id="recipes" class="canvas accent-cyan">
+      <article id="admins" class="canvas accent-green">
+        <span class="badge">Admin</span>
+        <h2 data-i18n="adminsTitle">Admin commands</h2>
+        <table>
+          <tr><th>Command</th><th data-i18n="use">Use</th></tr>
+          <tr><td>/oc settings</td><td data-i18n="settings">Settings menu</td></tr>
+          <tr><td>/oc browse</td><td data-i18n="browse">Recipe browser</td></tr>
+          <tr><td>/oc validate</td><td data-i18n="validate">Check config errors</td></tr>
+          <tr><td>/oc reload</td><td data-i18n="reload">Reload files</td></tr>
+        </table>
+      </article>
+
+      <article id="files" class="canvas accent-gold">
+        <span class="badge">Files</span>
+        <h2 data-i18n="filesTitle">Server files</h2>
+        <pre><code>plugins/OmniCraft/
+  config.yml
+  messages.yml
+  category/weapons/steel_sword.yml
+  logs/craft-history.log
+  exports/</code></pre>
+      </article>
+
+      <article id="recipe" class="canvas accent-cyan">
         <span class="badge">YAML</span>
-        <h2 data-i18n="recipesTitle">Recipe file shape</h2>
+        <h2 data-i18n="recipeTitle">Recipe example</h2>
         <pre><code>output:
-  mode: VANILLA
-  material: IRON_SWORD
+  mode: MMOITEMS
+  material: DIAMOND_SWORD
+  amount: 1
+  type: SWORD
+  id: STEEL_BLADE
+  enchantments:
+    advanced:
+      telepathy:
+        level: 1
 ingredients:
-  iron:
-    amount: 24
+  essence:
+    amount: 100
     item:
       mode: VANILLA
-      material: IRON_INGOT</code></pre>
+      material: AMETHYST_SHARD</code></pre>
+      </article>
+
+      <article id="hooks" class="canvas accent-green">
+        <span class="badge" data-i18n="badgeHooks">Hooks</span>
+        <h2 data-i18n="hooksTitle">Integrations</h2>
+        <p data-i18n="hooksBody">MMOItems is used for MMO item output and matching. AdvancedEnchantments is used to apply custom enchants. Vault handles money. PlaceholderAPI handles custom conditions.</p>
       </article>
 
       <article id="safety" class="canvas accent-red">
         <span class="badge" data-i18n="badgeSafety">Safety</span>
         <h2 data-i18n="safetyTitle">Anti-dupe model</h2>
-        <p data-i18n="safetyBody">OmniCraft cancels GUI clicks, ignores risky client actions, locks player recipe transactions, checks inventory server-side, and rolls back if output cannot be delivered.</p>
+        <p data-i18n="safetyBody">OmniCraft cancels GUI clicks, ignores risky client actions, locks player recipe transactions, scans inventory server-side, and rolls back when output cannot fit.</p>
       </article>
 
-      <article id="admin" class="canvas accent-green">
-        <span class="badge" data-i18n="badgeAdmin">Admin</span>
-        <h2 data-i18n="adminTitle">Admin tools</h2>
-        <p data-i18n="adminBody">Use settings, browse, reload, and debug commands to inspect recipes, reload YAML, and dry-run requirements before players craft.</p>
-      </article>
-
-      <article id="troubleshooting" class="canvas accent-gold">
+      <article id="trouble" class="canvas accent-gold">
         <span class="badge" data-i18n="badgeHelp">Help</span>
         <h2 data-i18n="troubleTitle">Troubleshooting</h2>
-        <p data-i18n="troubleBody">Run /oc reload after editing files. If MMOItems or Vault is missing, recipes using those hooks should be disabled or adjusted.</p>
+        <p data-i18n="troubleBody">Use /oc validate after editing recipes. Use /oc reload after fixing files. Read logs/craft-history.log for success, fail, and rollback details.</p>
       </article>
     </section>
   </main>

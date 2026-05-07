@@ -27,6 +27,30 @@ class HookService(private val plugin: JavaPlugin) {
         }.getOrNull()
     }
 
+    fun applyAdvancedEnchant(stack: ItemStack, enchantId: String, level: Int): ItemStack {
+        if (!enabled("AdvancedEnchantments")) return stack
+        return runCatching {
+            val clazz = Class.forName("net.advancedplugins.ae.api.AEAPI")
+            clazz.getMethod("applyEnchant", String::class.java, Int::class.javaPrimitiveType, ItemStack::class.java)
+                .invoke(null, enchantId, level, stack) as? ItemStack ?: stack
+        }.getOrDefault(stack)
+    }
+
+    fun advancedEnchantments(stack: ItemStack): Map<String, Int> {
+        if (!enabled("AdvancedEnchantments")) return emptyMap()
+        return runCatching {
+            val clazz = Class.forName("net.advancedplugins.ae.api.AEAPI")
+            val methods = listOf("getEnchantments", "getEnchantmentsOnItem", "getEnchantmentsFromItem")
+            for (methodName in methods) {
+                val method = clazz.methods.firstOrNull { it.name == methodName && it.parameterTypes.contentEquals(arrayOf(ItemStack::class.java)) }
+                val result = method?.invoke(null, stack) ?: continue
+                val parsed = parseEnchantResult(result)
+                if (parsed.isNotEmpty()) return@runCatching parsed
+            }
+            emptyMap()
+        }.getOrDefault(emptyMap())
+    }
+
     fun balance(player: Player): Double {
         val economy = economyProvider() ?: return 0.0
         return runCatching { economy.javaClass.getMethod("getBalance", org.bukkit.OfflinePlayer::class.java).invoke(economy, player) as Double }
@@ -59,6 +83,28 @@ class HookService(private val plugin: JavaPlugin) {
 
     fun enabled(name: String): Boolean {
         return Bukkit.getPluginManager().isPluginEnabled(name)
+    }
+
+    private fun parseEnchantResult(result: Any): Map<String, Int> {
+        if (result is Map<*, *>) {
+            return result.mapNotNull { (key, value) ->
+                val id = key?.toString() ?: return@mapNotNull null
+                val level = when (value) {
+                    is Number -> value.toInt()
+                    else -> value?.toString()?.toIntOrNull() ?: 1
+                }
+                id to level
+            }.toMap()
+        }
+        if (result is Iterable<*>) {
+            return result.mapNotNull { value ->
+                val text = value?.toString() ?: return@mapNotNull null
+                val parts = text.split(":", " ", limit = 2)
+                val id = parts.firstOrNull()?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+                id to (parts.getOrNull(1)?.toIntOrNull() ?: 1)
+            }.toMap()
+        }
+        return emptyMap()
     }
 
     private fun economyProvider(): Any? {

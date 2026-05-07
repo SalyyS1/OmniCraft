@@ -34,6 +34,10 @@ class RecipeWriter {
         yaml.set("extraction.success-rate", recipe.extraction.successRate)
         yaml.set("limits.daily", recipe.limits.daily)
         yaml.set("limits.weekly", recipe.limits.weekly)
+        yaml.set("options.enabled", recipe.options.enabled)
+        yaml.set("options.hidden", recipe.options.hidden)
+        yaml.set("options.rare-broadcast", recipe.options.rareBroadcast)
+        recipe.options.sourceHints.forEach { (key, value) -> yaml.set("options.source-hints.$key", value) }
 
         val temp = File(file.parentFile, "${file.name}.tmp")
         yaml.save(temp)
@@ -50,5 +54,11 @@ class RecipeWriter {
         yaml.set("$path.lore", item.lore)
         yaml.set("$path.type", item.mmoType)
         yaml.set("$path.id", item.mmoId)
+        for (enchant in item.advancedEnchantments) {
+            yaml.set("$path.enchantments.advanced.${enchant.id}.level", enchant.level)
+            yaml.set("$path.enchantments.advanced.${enchant.id}.success-rate", enchant.successRate)
+            yaml.set("$path.enchantments.advanced.${enchant.id}.destroy-rate", enchant.destroyRate)
+            yaml.set("$path.enchantments.advanced.${enchant.id}.tier", enchant.tier)
+        }
     }
 }

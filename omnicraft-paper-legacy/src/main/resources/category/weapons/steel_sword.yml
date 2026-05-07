@@ -1,6 +1,11 @@
+# Recipe id inside this category.
 id: steel_sword
+
+# Display name used in menus.
 display:
   name: "#7cf5ffSteel Sword"
+
+# Crafted result.
 output:
   mode: VANILLA
   material: IRON_SWORD
@@ -9,6 +14,15 @@ output:
   name: "#7cf5ffSteel Sword"
   lore:
     - "#d6f7ffA clean starter weapon."
+  enchantments:
+    advanced:
+      telepathy:
+        level: 1
+        success-rate: 100.0
+        destroy-rate: 0.0
+        tier: COMMON
+
+# Materials checked in the player inventory.
 ingredients:
   iron:
     amount: 24
@@ -22,26 +36,45 @@ ingredients:
       mode: VANILLA
       material: STICK
       amount: 1
+
+# Extra requirements before craft.
 requirements:
   permission: "omnicraft.recipe.steel_sword"
   level: 0
   money: 0.0
   conditions: []
+
+# Per-recipe click behavior.
 craft:
   left-amount: 1
   right-amount: 16
   shift-hard-cap: 512
   cooldown-ms: 350
+
+# Per-recipe countdown.
 craft-time:
   enabled: false
   seconds: 5
   cancel-on-move: false
   cancel-on-logout: true
+
+# What happens to risky data on consumed base items.
 extraction:
   enchant: DESTROY
   gemstone: DESTROY
   level: DESTROY
   success-rate: 1.0
+
+# Player craft limits.
 limits:
   daily: -1
   weekly: -1
+
+# Optional recipe utility settings.
+options:
+  enabled: true
+  hidden: false
+  rare-broadcast: false
+  source-hints:
+    iron: "Mine iron ore or buy it from the starter shop."
+    stick: "Craft from planks."

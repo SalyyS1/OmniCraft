@@ -19,7 +19,8 @@ data class CraftRecipe(
     val craft: CraftBehavior,
     val craftTime: CraftTime,
     val extraction: ExtractionPolicy,
-    val limits: CraftLimits
+    val limits: CraftLimits,
+    val options: RecipeOptions = RecipeOptions()
 )
 
 data class CraftItem(
@@ -30,7 +31,16 @@ data class CraftItem(
     val name: String? = null,
     val lore: List<String> = emptyList(),
     val mmoType: String? = null,
-    val mmoId: String? = null
+    val mmoId: String? = null,
+    val advancedEnchantments: List<AdvancedEnchant> = emptyList()
+)
+
+data class AdvancedEnchant(
+    val id: String,
+    val level: Int,
+    val successRate: Double = 100.0,
+    val destroyRate: Double = 0.0,
+    val tier: String? = null
 )
 
 data class CraftIngredient(
@@ -70,6 +80,13 @@ data class ExtractionPolicy(
 data class CraftLimits(
     val daily: Int = -1,
     val weekly: Int = -1
+)
+
+data class RecipeOptions(
+    val enabled: Boolean = true,
+    val hidden: Boolean = false,
+    val rareBroadcast: Boolean = false,
+    val sourceHints: Map<String, String> = emptyMap()
 )
 
 enum class ItemMode {
