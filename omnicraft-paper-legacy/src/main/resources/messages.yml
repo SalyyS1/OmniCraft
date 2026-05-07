@@ -1,0 +1,21 @@
+gui:
+  main-title: "#7cf5ffOmniCraft"
+  requirement-line: "{color}{current}/{required}"
+
+titles:
+  crafting: "#7cf5ffCrafting"
+  countdown: "#d6f7ffFinishing in {seconds}s"
+
+errors:
+  no-permission: "#ff6961No permission."
+  no-category-permission: "#ff6961You cannot open this category."
+  category-not-found: "#ff6961Category not found."
+  too-fast: "#ff6961Please slow down."
+  blocked-gamemode: "#ff6961You cannot craft in this game mode."
+  locked: "#ff6961This recipe is already processing."
+  requirements: "#ff6961You do not meet the requirements."
+  inventory-full: "#ff6961Inventory full. Craft cancelled."
+
+success:
+  crafted: "#71f79fCrafted {amount}x {item}."
+  reload: "#71f79fOmniCraft reloaded."

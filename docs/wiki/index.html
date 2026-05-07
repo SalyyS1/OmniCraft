@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OmniCraft Wiki</title>
+  <link rel="stylesheet" href="assets/wiki.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">OmniCraft Wiki</p>
+      <h1 data-i18n="title">Crafting stations for MMO servers</h1>
+      <p data-i18n="subtitle">A compact guide for installing, configuring, and operating OmniCraft safely.</p>
+    </div>
+    <div class="language">
+      <button data-lang="en">English</button>
+      <button data-lang="vi">Tiếng Việt</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <nav class="sidebar">
+      <a href="#overview" data-i18n="navOverview">Overview</a>
+      <a href="#install" data-i18n="navInstall">Installation</a>
+      <a href="#commands" data-i18n="navCommands">Commands</a>
+      <a href="#recipes" data-i18n="navRecipes">Recipes</a>
+      <a href="#safety" data-i18n="navSafety">Anti-dupe safety</a>
+      <a href="#admin" data-i18n="navAdmin">Admin tools</a>
+      <a href="#troubleshooting" data-i18n="navTrouble">Troubleshooting</a>
+    </nav>
+
+    <section class="content">
+      <article id="overview" class="canvas accent-cyan">
+        <span class="badge" data-i18n="badgeCore">Core</span>
+        <h2 data-i18n="overviewTitle">What OmniCraft does</h2>
+        <p data-i18n="overviewBody">OmniCraft creates MMOItems-style crafting menus with category browsing, recipe previews, requirements, craft delays, and server-side transactions.</p>
+      </article>
+
+      <article id="install" class="canvas accent-green">
+        <span class="badge" data-i18n="badgeSetup">Setup</span>
+        <h2 data-i18n="installTitle">Installation</h2>
+        <ol>
+          <li data-i18n="install1">Build the jar with Gradle.</li>
+          <li data-i18n="install2">Place the matching jar in the server plugins folder.</li>
+          <li data-i18n="install3">Start the server once, then edit config files.</li>
+        </ol>
+        <pre><code>.\gradlew.bat clean build</code></pre>
+      </article>
+
+      <article id="commands" class="canvas accent-gold">
+        <span class="badge" data-i18n="badgeAccess">Access</span>
+        <h2 data-i18n="commandsTitle">Commands and permissions</h2>
+        <table>
+          <tr><th>Command</th><th>Permission</th></tr>
+          <tr><td>/oc</td><td>omnicraft.use</td></tr>
+          <tr><td>/oc open &lt;category&gt;</td><td>omnicraft.category.&lt;id&gt;</td></tr>
+          <tr><td>/oc settings</td><td>omnicraft.settings</td></tr>
+          <tr><td>/oc browse</td><td>omnicraft.admin</td></tr>
+        </table>
+      </article>
+
+      <article id="recipes" class="canvas accent-cyan">
+        <span class="badge">YAML</span>
+        <h2 data-i18n="recipesTitle">Recipe file shape</h2>
+        <pre><code>output:
+  mode: VANILLA
+  material: IRON_SWORD
+ingredients:
+  iron:
+    amount: 24
+    item:
+      mode: VANILLA
+      material: IRON_INGOT</code></pre>
+      </article>
+
+      <article id="safety" class="canvas accent-red">
+        <span class="badge" data-i18n="badgeSafety">Safety</span>
+        <h2 data-i18n="safetyTitle">Anti-dupe model</h2>
+        <p data-i18n="safetyBody">OmniCraft cancels GUI clicks, ignores risky client actions, locks player recipe transactions, checks inventory server-side, and rolls back if output cannot be delivered.</p>
+      </article>
+
+      <article id="admin" class="canvas accent-green">
+        <span class="badge" data-i18n="badgeAdmin">Admin</span>
+        <h2 data-i18n="adminTitle">Admin tools</h2>
+        <p data-i18n="adminBody">Use settings, browse, reload, and debug commands to inspect recipes, reload YAML, and dry-run requirements before players craft.</p>
+      </article>
+
+      <article id="troubleshooting" class="canvas accent-gold">
+        <span class="badge" data-i18n="badgeHelp">Help</span>
+        <h2 data-i18n="troubleTitle">Troubleshooting</h2>
+        <p data-i18n="troubleBody">Run /oc reload after editing files. If MMOItems or Vault is missing, recipes using those hooks should be disabled or adjusted.</p>
+      </article>
+    </section>
+  </main>
+  <script src="assets/wiki.js"></script>
+</body>
+</html>

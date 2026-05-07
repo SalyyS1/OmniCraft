@@ -1,0 +1,41 @@
+name: OmniCraft
+version: "0.1.0"
+main: com.salyvn.omnicraft.OmniCraftPlugin
+api-version: "1.20"
+authors: [SalyVn]
+description: GUI crafting station with MMOItems-style categories, safe transactions, and admin tooling.
+softdepend:
+  - MMOItems
+  - MythicLib
+  - AdvancedEnchantments
+  - Vault
+  - PlaceholderAPI
+  - OmniGemStone
+  - OmniEnchants
+  - OmniTooltips
+  - OmniMinMax
+  - OmniDelta
+  - OmniSet
+  - OmniLore
+  - OmniModifier
+  - OmniPopupPickup
+  - OmniTotalStats
+commands:
+  omnicraft:
+    description: Open OmniCraft or run admin commands.
+    aliases: [oc, ocraft, craft]
+permissions:
+  omnicraft.use:
+    default: true
+  omnicraft.admin:
+    default: op
+  omnicraft.settings:
+    default: op
+  omnicraft.reload:
+    default: op
+  omnicraft.debug:
+    default: op
+  omnicraft.bypass.delay:
+    default: op
+  omnicraft.bypass.craft-time:
+    default: op

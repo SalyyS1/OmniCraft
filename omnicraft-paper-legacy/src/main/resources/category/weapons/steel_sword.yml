@@ -1,0 +1,47 @@
+id: steel_sword
+display:
+  name: "#7cf5ffSteel Sword"
+output:
+  mode: VANILLA
+  material: IRON_SWORD
+  amount: 1
+  uid: steel_sword
+  name: "#7cf5ffSteel Sword"
+  lore:
+    - "#d6f7ffA clean starter weapon."
+ingredients:
+  iron:
+    amount: 24
+    item:
+      mode: VANILLA
+      material: IRON_INGOT
+      amount: 1
+  stick:
+    amount: 4
+    item:
+      mode: VANILLA
+      material: STICK
+      amount: 1
+requirements:
+  permission: "omnicraft.recipe.steel_sword"
+  level: 0
+  money: 0.0
+  conditions: []
+craft:
+  left-amount: 1
+  right-amount: 16
+  shift-hard-cap: 512
+  cooldown-ms: 350
+craft-time:
+  enabled: false
+  seconds: 5
+  cancel-on-move: false
+  cancel-on-logout: true
+extraction:
+  enchant: DESTROY
+  gemstone: DESTROY
+  level: DESTROY
+  success-rate: 1.0
+limits:
+  daily: -1
+  weekly: -1

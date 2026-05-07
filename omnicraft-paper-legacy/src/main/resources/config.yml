@@ -1,0 +1,41 @@
+main-menu:
+  title: "#7cf5ffOmniCraft"
+  size: 54
+  categories:
+    - id: weapons
+      title: "Weapons"
+      icon: DIAMOND_SWORD
+      slot: 10
+      permission: "omnicraft.category.weapons"
+      conditions: []
+      entry-cost: 0.0
+
+craft:
+  left-amount: 1
+  right-amount: 16
+  shift-hard-cap: 512
+  cooldown-ms: 350
+
+craft-time:
+  enabled: false
+  seconds: 5
+  cancel-on-move: false
+  cancel-on-logout: true
+
+anti-dupe:
+  block-creative: true
+  audit: true
+  minimum-tps: 16.0
+  lock-timeout-ms: 10000
+  suspicious-clicks-per-second: 8
+
+extraction-defaults:
+  enchant: DESTROY
+  gemstone: DESTROY
+  level: DESTROY
+  success-rate: 1.0
+
+history:
+  enabled: true
+  log-rare-recipes: true
+  webhook-url: ""

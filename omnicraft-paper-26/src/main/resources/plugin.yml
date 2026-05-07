@@ -1,0 +1,11 @@
+name: OmniCraft
+version: "0.1.0"
+main: com.salyvn.omnicraft.OmniCraftPlugin
+api-version: "1.21"
+authors: [SalyVn]
+description: OmniCraft build for the Paper 26.x line.
+softdepend: [MMOItems, MythicLib, AdvancedEnchantments, Vault, PlaceholderAPI, OmniGemStone, OmniEnchants]
+commands:
+  omnicraft:
+    description: Open OmniCraft or run admin commands.
+    aliases: [oc, ocraft, craft]
