@@ -1,6 +1,7 @@
 package com.salyvn.omnicraft.hook
 
 import org.bukkit.Bukkit
+import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
@@ -49,6 +50,14 @@ class HookService(private val plugin: JavaPlugin) {
             }
             emptyMap()
         }.getOrDefault(emptyMap())
+    }
+
+    fun giveAdvancedEnchantBook(player: Player, enchantId: String, level: Int, successRate: Double, destroyRate: Double): Boolean {
+        if (!enabled("AdvancedEnchantments")) return false
+        val command = "ae givebook ${player.name} $enchantId ${level.coerceAtLeast(1)} 1 ${successRate.coerceIn(0.0, 100.0)} ${destroyRate.coerceIn(0.0, 100.0)}"
+        return runCatching {
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender() as CommandSender, command)
+        }.getOrDefault(false)
     }
 
     fun balance(player: Player): Double {

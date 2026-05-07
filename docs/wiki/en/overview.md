@@ -127,6 +127,14 @@ options:
 
 OmniCraft can apply custom enchants to crafted outputs through AdvancedEnchantments. Use `output.enchantments.advanced`. If AdvancedEnchantments is not installed, OmniCraft can either skip the custom enchants or disable those recipes, depending on `advanced-enchantments.missing-hook-disables-ae-recipes`.
 
+`extraction.enchant` means AdvancedEnchantments custom enchants on consumed base materials.
+
+- `EXTRACT`: split AE enchants into AE books using `/ae givebook`.
+- `DESTROY`: consumed AE enchants are lost.
+- `KEEP`: currently warns only, because the base item is consumed.
+
+Returned books use `advanced-enchantments.extraction.fixed-success-rate`, `fixed-destroy-rate`, and optional `per-enchant` overrides.
+
 ## Anti-dupe Safety
 
 OmniCraft does not trust client clicks. GUI clicks are cancelled, risky click types are ignored, inventory is scanned server-side, one player recipe transaction is locked, materials are removed before output is given, and rollback runs if output cannot be delivered.

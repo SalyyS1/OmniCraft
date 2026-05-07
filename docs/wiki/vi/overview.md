@@ -127,6 +127,14 @@ options:
 
 OmniCraft có thể apply custom enchant vào output bằng AdvancedEnchantments. Dùng `output.enchantments.advanced`. Nếu server không cài AdvancedEnchantments, OmniCraft có thể bỏ qua custom enchant hoặc disable recipe đó theo `advanced-enchantments.missing-hook-disables-ae-recipes`.
 
+`extraction.enchant` nghĩa là custom enchant của AdvancedEnchantments trên nguyên liệu nền bị consume.
+
+- `EXTRACT`: tách AE enchant thành sách AE bằng `/ae givebook`.
+- `DESTROY`: AE enchant bị mất.
+- `KEEP`: hiện chỉ cảnh báo, vì item nền đã bị consume.
+
+Sách trả lại dùng `advanced-enchantments.extraction.fixed-success-rate`, `fixed-destroy-rate` và override trong `per-enchant` nếu có.
+
 ## Chống dupe
 
 OmniCraft không tin click từ client. GUI click bị cancel, click type rủi ro bị bỏ qua, inventory được scan server-side, mỗi player/recipe có lock riêng, nguyên liệu bị trừ trước khi phát output, và rollback nếu không phát được output.

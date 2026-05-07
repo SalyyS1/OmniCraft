@@ -59,8 +59,9 @@ craft-time:
   cancel-on-logout: true
 
 # What happens to risky data on consumed base items.
+# enchant means AdvancedEnchantments custom enchants.
 extraction:
-  enchant: DESTROY
+  enchant: EXTRACT
   gemstone: DESTROY
   level: DESTROY
   success-rate: 1.0

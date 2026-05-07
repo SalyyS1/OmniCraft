@@ -55,9 +55,17 @@ advanced-enchantments:
   warn-when-consumed: true
   missing-hook-disables-ae-recipes: false
   extraction:
-    book-material: BOOK
+    # Chance to successfully split AE enchants from consumed base items.
+    extract-rate: 100.0
+    # Returned AE book rates when extraction succeeds.
     fixed-success-rate: 50.0
     fixed-destroy-rate: 0.0
+    # Override rates for specific enchant ids.
+    per-enchant:
+      telepathy:
+        extract-rate: 100.0
+        book-success-rate: 50.0
+        book-destroy-rate: 0.0
     tier-rates:
       COMMON: 70.0
       RARE: 55.0

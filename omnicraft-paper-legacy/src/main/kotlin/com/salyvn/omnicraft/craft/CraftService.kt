@@ -6,6 +6,7 @@ import com.salyvn.omnicraft.core.CraftCalculator
 import com.salyvn.omnicraft.core.CraftClickMode
 import com.salyvn.omnicraft.core.CraftLocks
 import com.salyvn.omnicraft.core.CraftRecipe
+import com.salyvn.omnicraft.core.ExtractionMode
 import com.salyvn.omnicraft.hook.HookService
 import com.salyvn.omnicraft.item.ItemAdapter
 import com.salyvn.omnicraft.util.Text
@@ -14,6 +15,7 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitTask
 import java.util.UUID
+import kotlin.random.Random
 
 class CraftService(
     private val plugin: OmniCraftPlugin,
@@ -107,6 +109,7 @@ class CraftService(
             val inventory = ItemAdapter.inventoryEntries(player.inventory.storageContents)
             val plan = calculator.selectionPlan(recipe, inventory, crafts)
             val removed = mutableListOf<Pair<Int, ItemStack>>()
+            val extractedEnchants = mutableListOf<ExtractedAdvancedEnchant>()
             val chargedMoney = recipe.requirements.money * crafts
             for ((_, entries) in plan) {
                 for (entry in entries) {
@@ -114,6 +117,7 @@ class CraftService(
                     val clone = stack.clone()
                     clone.amount = entry.amount
                     removed += entry.slot to clone
+                    extractedEnchants += readExtractableAdvancedEnchants(clone)
                     stack.amount -= entry.amount
                     player.inventory.setItem(entry.slot, if (stack.amount <= 0) null else stack)
                 }
@@ -136,6 +140,7 @@ class CraftService(
             }
 
             usage.record(player, recipe, crafts)
+            handleAdvancedEnchantExtraction(player, recipe, extractedEnchants)
             audit.record(player, recipe, crafts, "success")
             if (recipe.options.rareBroadcast && plugin.config.getBoolean("history.log-rare-recipes", true)) {
                 plugin.server.broadcast(Text.c(config.message("broadcast.rare-craft", "#ffd166{player} crafted {amount}x {item}.")
@@ -195,4 +200,59 @@ class CraftService(
         }
         return stacks
     }
+
+    private fun readExtractableAdvancedEnchants(item: ItemStack): List<ExtractedAdvancedEnchant> {
+        val enchants = hooks.advancedEnchantments(item)
+        if (enchants.isEmpty()) return emptyList()
+        return (1..item.amount.coerceAtLeast(1)).flatMap {
+            enchants.map { (id, level) -> ExtractedAdvancedEnchant(id, level) }
+        }
+    }
+
+    private fun handleAdvancedEnchantExtraction(player: Player, recipe: CraftRecipe, enchants: List<ExtractedAdvancedEnchant>) {
+        if (enchants.isEmpty()) return
+        when (recipe.extraction.enchant) {
+            ExtractionMode.DESTROY -> {
+                player.sendMessage(Text.c(config.message("risk.advanced-destroyed", "#ff6961AdvancedEnchantments on consumed materials were destroyed.")))
+            }
+            ExtractionMode.KEEP -> {
+                player.sendMessage(Text.c(config.message("risk.advanced-kept-warning", "#ffd166AdvancedEnchantments were detected, but KEEP cannot preserve consumed base items yet.")))
+            }
+            ExtractionMode.EXTRACT -> {
+                var success = 0
+                var failed = 0
+                for (enchant in enchants) {
+                    val chance = extractionSuccessRate(enchant.id)
+                    if (Random.nextDouble(100.0) <= chance && hooks.giveAdvancedEnchantBook(player, enchant.id, enchant.level, bookSuccessRate(enchant.id), bookDestroyRate(enchant.id))) {
+                        success++
+                    } else {
+                        failed++
+                    }
+                }
+                player.sendMessage(Text.c(config.message("risk.advanced-extracted", "#71f79fExtracted {success} AdvancedEnchantments. Failed {failed}.")
+                    .replace("{success}", success.toString())
+                    .replace("{failed}", failed.toString())))
+            }
+        }
+    }
+
+    private fun extractionSuccessRate(enchantId: String): Double {
+        return plugin.config.getDouble("advanced-enchantments.extraction.per-enchant.$enchantId.extract-rate",
+            plugin.config.getDouble("advanced-enchantments.extraction.extract-rate", 100.0)
+        ).coerceIn(0.0, 100.0)
+    }
+
+    private fun bookSuccessRate(enchantId: String): Double {
+        return plugin.config.getDouble("advanced-enchantments.extraction.per-enchant.$enchantId.book-success-rate",
+            plugin.config.getDouble("advanced-enchantments.extraction.fixed-success-rate", 50.0)
+        ).coerceIn(0.0, 100.0)
+    }
+
+    private fun bookDestroyRate(enchantId: String): Double {
+        return plugin.config.getDouble("advanced-enchantments.extraction.per-enchant.$enchantId.book-destroy-rate",
+            plugin.config.getDouble("advanced-enchantments.extraction.fixed-destroy-rate", 0.0)
+        ).coerceIn(0.0, 100.0)
+    }
+
+    private data class ExtractedAdvancedEnchant(val id: String, val level: Int)
 }

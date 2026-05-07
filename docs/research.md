@@ -48,6 +48,7 @@ OmniCraft integration:
 
 - `output.enchantments.advanced` applies AE enchants to crafted outputs.
 - AE enchants on player items count as risk when selecting which base item to consume first.
+- `extraction.enchant: EXTRACT` splits AE enchants from consumed base items into AE books through `/ae givebook`.
 - `advanced-enchantments.missing-hook-disables-ae-recipes` can force AE recipes to fail when the hook is missing.
 
 ## Safety Decisions
