@@ -35,6 +35,8 @@ permissions:
     default: op
   omnicraft.debug:
     default: op
+  omnicraft.validate:
+    default: op
   omnicraft.bypass.delay:
     default: op
   omnicraft.bypass.craft-time:

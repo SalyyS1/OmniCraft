@@ -1,0 +1,54 @@
+package com.salyvn.omnicraft.config
+
+import com.salyvn.omnicraft.core.CraftItem
+import com.salyvn.omnicraft.core.CraftRecipe
+import org.bukkit.configuration.file.YamlConfiguration
+import java.io.File
+
+class RecipeWriter {
+    fun saveAtomic(file: File, recipe: CraftRecipe) {
+        file.parentFile.mkdirs()
+        val yaml = YamlConfiguration()
+        yaml.set("id", recipe.id)
+        yaml.set("display.name", recipe.displayName)
+        writeItem(yaml, "output", recipe.output)
+        for (ingredient in recipe.ingredients) {
+            yaml.set("ingredients.${ingredient.id}.amount", ingredient.requiredAmount)
+            writeItem(yaml, "ingredients.${ingredient.id}.item", ingredient.item)
+        }
+        yaml.set("requirements.permission", recipe.requirements.permission)
+        yaml.set("requirements.level", recipe.requirements.level)
+        yaml.set("requirements.money", recipe.requirements.money)
+        yaml.set("requirements.conditions", recipe.requirements.papiConditions)
+        yaml.set("craft.left-amount", recipe.craft.leftAmount)
+        yaml.set("craft.right-amount", recipe.craft.rightAmount)
+        yaml.set("craft.shift-hard-cap", recipe.craft.shiftHardCap)
+        yaml.set("craft.cooldown-ms", recipe.craft.cooldownMillis)
+        yaml.set("craft-time.enabled", recipe.craftTime.enabled)
+        yaml.set("craft-time.seconds", recipe.craftTime.seconds)
+        yaml.set("craft-time.cancel-on-move", recipe.craftTime.cancelOnMove)
+        yaml.set("craft-time.cancel-on-logout", recipe.craftTime.cancelOnLogout)
+        yaml.set("extraction.enchant", recipe.extraction.enchant.name)
+        yaml.set("extraction.gemstone", recipe.extraction.gemstone.name)
+        yaml.set("extraction.level", recipe.extraction.level.name)
+        yaml.set("extraction.success-rate", recipe.extraction.successRate)
+        yaml.set("limits.daily", recipe.limits.daily)
+        yaml.set("limits.weekly", recipe.limits.weekly)
+
+        val temp = File(file.parentFile, "${file.name}.tmp")
+        yaml.save(temp)
+        if (file.exists()) file.delete()
+        temp.renameTo(file)
+    }
+
+    private fun writeItem(yaml: YamlConfiguration, path: String, item: CraftItem) {
+        yaml.set("$path.mode", item.mode.name)
+        yaml.set("$path.material", item.material)
+        yaml.set("$path.amount", item.amount)
+        yaml.set("$path.uid", item.uid)
+        yaml.set("$path.name", item.name)
+        yaml.set("$path.lore", item.lore)
+        yaml.set("$path.type", item.mmoType)
+        yaml.set("$path.id", item.mmoId)
+    }
+}

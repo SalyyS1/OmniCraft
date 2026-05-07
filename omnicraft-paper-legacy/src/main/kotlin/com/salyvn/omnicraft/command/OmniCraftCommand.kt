@@ -77,6 +77,19 @@ class OmniCraftCommand(
                 val check = craft.check(player, recipe)
                 player.sendMessage(Text.c("#7cf5ffRecipe ${recipe.categoryId}:${recipe.id} craftable=${check.craftableAmount} missing=${check.missing}"))
             }
+            "validate" -> {
+                if (!sender.hasPermission("omnicraft.validate")) {
+                    sender.sendMessage(Text.c(config.message("errors.no-permission", "#ff6961No permission.")))
+                    return true
+                }
+                val issues = config.validate()
+                if (issues.isEmpty()) {
+                    sender.sendMessage(Text.c("#71f79fOmniCraft config looks clean."))
+                } else {
+                    sender.sendMessage(Text.c("#ff6961OmniCraft found ${issues.size} config issue(s):"))
+                    issues.take(10).forEach { sender.sendMessage(Text.c("#ffd166- $it")) }
+                }
+            }
             else -> if (player != null) menus.openMain(player)
         }
         return true
@@ -84,7 +97,7 @@ class OmniCraftCommand(
 
     override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): List<String> {
         return when (args.size) {
-            1 -> listOf("open", "settings", "browse", "reload", "debug").filter { it.startsWith(args[0], true) }
+            1 -> listOf("open", "settings", "browse", "reload", "debug", "validate").filter { it.startsWith(args[0], true) }
             2 -> if (args[0].equals("open", true)) config.categories.map { it.id }.filter { it.startsWith(args[1], true) } else emptyList()
             else -> emptyList()
         }

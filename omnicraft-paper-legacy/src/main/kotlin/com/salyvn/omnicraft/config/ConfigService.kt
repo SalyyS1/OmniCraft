@@ -46,6 +46,25 @@ class ConfigService(private val plugin: OmniCraftPlugin) {
             .firstOrNull { it.id.equals(anyId, ignoreCase = true) || "${it.categoryId}:${it.id}".equals(anyId, ignoreCase = true) }
     }
 
+    fun validate(): List<String> {
+        val issues = mutableListOf<String>()
+        val categoryIds = mutableSetOf<String>()
+        for (category in categories) {
+            if (!categoryIds.add(category.id.lowercase())) issues += "Duplicate category '${category.id}'"
+            if (category.slot !in 0..53) issues += "Category '${category.id}' slot is outside 0..53"
+            if (category.recipes.isEmpty()) issues += "Category '${category.id}' has no recipes"
+            val recipeIds = mutableSetOf<String>()
+            for (recipe in category.recipes) {
+                if (!recipeIds.add(recipe.id.lowercase())) issues += "Duplicate recipe '${category.id}:${recipe.id}'"
+                if (recipe.ingredients.isEmpty()) issues += "Recipe '${category.id}:${recipe.id}' has no ingredients"
+                if (recipe.ingredients.size > 25) issues += "Recipe '${category.id}:${recipe.id}' has more than 25 ingredients"
+                if (recipe.output.amount <= 0) issues += "Recipe '${category.id}:${recipe.id}' output amount must be positive"
+                if (recipe.extraction.successRate !in 0.0..1.0) issues += "Recipe '${category.id}:${recipe.id}' extraction success rate must be 0..1"
+            }
+        }
+        return issues
+    }
+
     private fun loadCategories(): List<CraftCategory> {
         val configCategories = plugin.config.getMapList("main-menu.categories")
         return configCategories.mapNotNull { raw ->
