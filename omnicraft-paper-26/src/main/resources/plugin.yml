@@ -4,8 +4,40 @@ main: com.salyvn.omnicraft.OmniCraftPlugin
 api-version: "1.21"
 authors: [SalyVn]
 description: OmniCraft build for the Paper 26.x line.
-softdepend: [MMOItems, MythicLib, AdvancedEnchantments, Vault, PlaceholderAPI, OmniGemStone, OmniEnchants]
+softdepend:
+  - MMOItems
+  - MythicLib
+  - AdvancedEnchantments
+  - Vault
+  - PlaceholderAPI
+  - OmniGemStone
+  - OmniEnchants
+  - OmniTooltips
+  - OmniMinMax
+  - OmniDelta
+  - OmniSet
+  - OmniLore
+  - OmniModifier
+  - OmniPopupPickup
+  - OmniTotalStats
 commands:
   omnicraft:
     description: Open OmniCraft or run admin commands.
     aliases: [oc, ocraft, craft]
+permissions:
+  omnicraft.use:
+    default: true
+  omnicraft.admin:
+    default: op
+  omnicraft.settings:
+    default: op
+  omnicraft.reload:
+    default: op
+  omnicraft.debug:
+    default: op
+  omnicraft.validate:
+    default: op
+  omnicraft.bypass.delay:
+    default: op
+  omnicraft.bypass.craft-time:
+    default: op

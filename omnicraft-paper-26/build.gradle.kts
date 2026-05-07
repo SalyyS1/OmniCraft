@@ -16,6 +16,7 @@ tasks {
         archiveClassifier.set("")
         archiveVersion.set("")
         archiveFileName.set("OmniCraft-26.jar")
+        duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.EXCLUDE
     }
     assemble { dependsOn(shadowJar) }
 }
