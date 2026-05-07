@@ -24,6 +24,9 @@ This repository contains the first implementation pass for OmniCraft v1. The sta
 | `/oc browse` | `omnicraft.admin` | Open the admin recipe browser |
 | `/oc reload` | `omnicraft.reload` | Reload config and recipes |
 | `/oc debug recipe <id>` | `omnicraft.debug` | Dry-run a recipe check |
+| `/oc validate` | `omnicraft.validate` | Validate loaded categories and recipes |
+| `/oc export <category>` | `omnicraft.admin` | Export category recipes to a zip |
+| `/oc import <category> <file.zip>` | `omnicraft.admin` | Import category recipes from `plugins/OmniCraft/exports` |
 
 ## Configuration
 
@@ -58,3 +61,9 @@ Artifacts:
 
 - `omnicraft-paper-legacy/build/libs/OmniCraft-legacy.jar`
 - `omnicraft-paper-26/build/libs/OmniCraft-26.jar`
+
+## Wiki
+
+- Static bilingual page: `docs/wiki/index.html`
+- Markdown wiki: `docs/wiki/en/overview.md` and `docs/wiki/vi/overview.md`
+- Research notes: `docs/research.md`
