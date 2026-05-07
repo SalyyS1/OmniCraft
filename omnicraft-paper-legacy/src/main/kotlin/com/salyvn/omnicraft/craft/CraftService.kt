@@ -15,7 +15,13 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitTask
 import java.util.UUID
 
-class CraftService(private val plugin: OmniCraftPlugin, private val config: ConfigService, private val hooks: HookService) {
+class CraftService(
+    private val plugin: OmniCraftPlugin,
+    private val config: ConfigService,
+    private val hooks: HookService,
+    private val usage: UsageService,
+    private val audit: AuditService
+) {
     private val calculator = CraftCalculator()
     private val locks = CraftLocks()
     private val countdowns = mutableMapOf<UUID, BukkitTask>()
@@ -83,7 +89,13 @@ class CraftService(private val plugin: OmniCraftPlugin, private val config: Conf
             val check = check(player, recipe)
             val crafts = calculator.requestedAmount(recipe, mode, check.craftableAmount)
             if (!check.allowed || crafts <= 0) {
+                audit.record(player, recipe, 0, "fail", "requirements")
                 player.sendMessage(Text.c(config.message("errors.requirements", "#ff6961You do not meet the requirements.")))
+                return
+            }
+            if (!usage.allowed(player, recipe, crafts)) {
+                audit.record(player, recipe, crafts, "fail", "limit")
+                player.sendMessage(Text.c(config.message("errors.limit", "#ff6961Craft limit reached.")))
                 return
             }
 
@@ -103,6 +115,7 @@ class CraftService(private val plugin: OmniCraftPlugin, private val config: Conf
             }
             if (!hooks.withdraw(player, chargedMoney)) {
                 rollback(player, removed)
+                audit.record(player, recipe, crafts, "rollback", "money")
                 player.sendMessage(Text.c(config.message("errors.requirements", "#ff6961You do not meet the requirements.")))
                 return
             }
@@ -112,10 +125,13 @@ class CraftService(private val plugin: OmniCraftPlugin, private val config: Conf
             if (leftover.isNotEmpty()) {
                 rollback(player, removed)
                 hooks.deposit(player, chargedMoney)
+                audit.record(player, recipe, crafts, "rollback", "inventory-full")
                 player.sendMessage(Text.c(config.message("errors.inventory-full", "#ff6961Inventory full. Craft cancelled.")))
                 return
             }
 
+            usage.record(player, recipe, crafts)
+            audit.record(player, recipe, crafts, "success")
             plugin.logger.info("craft success player=${player.name} recipe=${recipe.categoryId}:${recipe.id} amount=$crafts")
             player.sendMessage(Text.c(config.message("success.crafted", "#71f79fCrafted {amount}x {item}.")
                 .replace("{amount}", crafts.toString())

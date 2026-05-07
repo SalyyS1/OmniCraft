@@ -15,6 +15,7 @@ errors:
   locked: "#ff6961This recipe is already processing."
   requirements: "#ff6961You do not meet the requirements."
   inventory-full: "#ff6961Inventory full. Craft cancelled."
+  limit: "#ff6961Craft limit reached."
 
 success:
   crafted: "#71f79fCrafted {amount}x {item}."
