@@ -5,6 +5,8 @@ import com.salyvn.omnicraft.config.ConfigService
 import com.salyvn.omnicraft.craft.CraftService
 import com.salyvn.omnicraft.gui.GuiListener
 import com.salyvn.omnicraft.gui.MenuService
+import com.salyvn.omnicraft.hook.HookService
+import com.salyvn.omnicraft.item.ItemAdapter
 import org.bukkit.plugin.java.JavaPlugin
 
 class OmniCraftPlugin : JavaPlugin() {
@@ -14,6 +16,8 @@ class OmniCraftPlugin : JavaPlugin() {
         private set
     lateinit var menuService: MenuService
         private set
+    lateinit var hooks: HookService
+        private set
 
     override fun onEnable() {
         saveDefaultConfig()
@@ -22,7 +26,9 @@ class OmniCraftPlugin : JavaPlugin() {
 
         configService = ConfigService(this)
         configService.reload()
-        craftService = CraftService(this, configService)
+        hooks = HookService(this)
+        ItemAdapter.hooks = hooks
+        craftService = CraftService(this, configService, hooks)
         menuService = MenuService(configService, craftService)
 
         val command = OmniCraftCommand(this, configService, menuService, craftService)

@@ -5,16 +5,24 @@ import com.salyvn.omnicraft.core.InventoryEntry
 import com.salyvn.omnicraft.core.ItemKey
 import com.salyvn.omnicraft.core.ItemMode
 import com.salyvn.omnicraft.core.ItemRisk
+import com.salyvn.omnicraft.hook.HookService
 import com.salyvn.omnicraft.util.Text
 import org.bukkit.Material
+import org.bukkit.NamespacedKey
 import org.bukkit.inventory.ItemStack
+import org.bukkit.persistence.PersistentDataType
 
 object ItemAdapter {
+    var hooks: HookService? = null
+    private val uidKey = NamespacedKey("omnicraft", "uid")
+
     fun key(stack: ItemStack): ItemKey {
-        val meta = stack.itemMeta
-        val uid = meta?.persistentDataContainer?.keys?.firstOrNull { it.key.equals("omnicraft_uid", true) }?.let {
-            meta.persistentDataContainer.get(it, org.bukkit.persistence.PersistentDataType.STRING)
+        val mmo = hooks?.mmoKey(stack)
+        if (mmo != null) {
+            return ItemKey(ItemMode.MMOITEMS, stack.type.name, mmoType = mmo.first, mmoId = mmo.second)
         }
+        val meta = stack.itemMeta
+        val uid = meta?.persistentDataContainer?.get(uidKey, PersistentDataType.STRING)
         return ItemKey(ItemMode.VANILLA, stack.type.name, uid)
     }
 
@@ -26,12 +34,17 @@ object ItemAdapter {
     }
 
     fun fromCraftItem(item: CraftItem, amountOverride: Int? = null): ItemStack {
+        val amount = (amountOverride ?: item.amount).coerceAtLeast(1)
+        if (item.mode == ItemMode.MMOITEMS) {
+            hooks?.mmoItem(item.mmoType, item.mmoId, amount)?.let { return it }
+        }
         val material = Material.matchMaterial(item.material) ?: Material.STONE
-        val stack = ItemStack(material, (amountOverride ?: item.amount).coerceAtLeast(1))
+        val stack = ItemStack(material, amount)
         val meta = stack.itemMeta
         if (meta != null) {
             item.name?.let { meta.displayName(Text.c(it)) }
             if (item.lore.isNotEmpty()) meta.lore(item.lore.map { Text.c(it) })
+            item.uid?.let { meta.persistentDataContainer.set(uidKey, PersistentDataType.STRING, it) }
             stack.itemMeta = meta
         }
         return stack

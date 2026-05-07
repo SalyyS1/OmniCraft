@@ -6,6 +6,7 @@ import com.salyvn.omnicraft.core.CraftCalculator
 import com.salyvn.omnicraft.core.CraftClickMode
 import com.salyvn.omnicraft.core.CraftLocks
 import com.salyvn.omnicraft.core.CraftRecipe
+import com.salyvn.omnicraft.hook.HookService
 import com.salyvn.omnicraft.item.ItemAdapter
 import com.salyvn.omnicraft.util.Text
 import org.bukkit.GameMode
@@ -14,7 +15,7 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitTask
 import java.util.UUID
 
-class CraftService(private val plugin: OmniCraftPlugin, private val config: ConfigService) {
+class CraftService(private val plugin: OmniCraftPlugin, private val config: ConfigService, private val hooks: HookService) {
     private val calculator = CraftCalculator()
     private val locks = CraftLocks()
     private val countdowns = mutableMapOf<UUID, BukkitTask>()
@@ -84,6 +85,7 @@ class CraftService(private val plugin: OmniCraftPlugin, private val config: Conf
             val inventory = ItemAdapter.inventoryEntries(player.inventory.storageContents)
             val plan = calculator.selectionPlan(recipe, inventory, crafts)
             val removed = mutableListOf<Pair<Int, ItemStack>>()
+            val chargedMoney = recipe.requirements.money * crafts
             for ((_, entries) in plan) {
                 for (entry in entries) {
                     val stack = player.inventory.getItem(entry.slot) ?: continue
@@ -94,11 +96,17 @@ class CraftService(private val plugin: OmniCraftPlugin, private val config: Conf
                     player.inventory.setItem(entry.slot, if (stack.amount <= 0) null else stack)
                 }
             }
+            if (!hooks.withdraw(player, chargedMoney)) {
+                rollback(player, removed)
+                player.sendMessage(Text.c(config.message("errors.requirements", "#ff6961You do not meet the requirements.")))
+                return
+            }
 
             val output = outputStacks(recipe, crafts)
             val leftover = player.inventory.addItem(*output.toTypedArray())
             if (leftover.isNotEmpty()) {
                 rollback(player, removed)
+                hooks.deposit(player, chargedMoney)
                 player.sendMessage(Text.c(config.message("errors.inventory-full", "#ff6961Inventory full. Craft cancelled.")))
                 return
             }
@@ -118,8 +126,8 @@ class CraftService(private val plugin: OmniCraftPlugin, private val config: Conf
         inventory = ItemAdapter.inventoryEntries(player.inventory.storageContents),
         hasPermission = recipe.requirements.permission?.let { player.hasPermission(it) } ?: true,
         level = player.level,
-        money = 0.0,
-        deniedConditions = emptyList()
+        money = hooks.balance(player),
+        deniedConditions = hooks.deniedConditions(player, recipe.requirements.papiConditions)
     )
 
     private fun rollback(player: Player, removed: List<Pair<Int, ItemStack>>) {
