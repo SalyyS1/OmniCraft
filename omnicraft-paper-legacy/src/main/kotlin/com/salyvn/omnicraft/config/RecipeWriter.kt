@@ -6,6 +6,14 @@ import org.bukkit.configuration.file.YamlConfiguration
 import java.io.File
 
 class RecipeWriter {
+    fun saveAtomic(file: File, yaml: YamlConfiguration) {
+        file.parentFile.mkdirs()
+        val temp = File(file.parentFile, "${file.name}.tmp")
+        yaml.save(temp)
+        if (file.exists()) file.delete()
+        temp.renameTo(file)
+    }
+
     fun saveAtomic(file: File, recipe: CraftRecipe) {
         file.parentFile.mkdirs()
         val yaml = YamlConfiguration()
@@ -39,10 +47,7 @@ class RecipeWriter {
         yaml.set("options.rare-broadcast", recipe.options.rareBroadcast)
         recipe.options.sourceHints.forEach { (key, value) -> yaml.set("options.source-hints.$key", value) }
 
-        val temp = File(file.parentFile, "${file.name}.tmp")
-        yaml.save(temp)
-        if (file.exists()) file.delete()
-        temp.renameTo(file)
+        saveAtomic(file, yaml)
     }
 
     private fun writeItem(yaml: YamlConfiguration, path: String, item: CraftItem) {

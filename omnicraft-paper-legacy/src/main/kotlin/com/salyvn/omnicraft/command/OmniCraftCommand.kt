@@ -58,6 +58,16 @@ class OmniCraftCommand(
                 }
                 menus.openBrowse(player)
             }
+            "search" -> {
+                if (player == null) return true
+                val category = args.getOrNull(1)
+                val query = args.drop(2).joinToString(" ").trim()
+                if (category == null || query.isBlank()) {
+                    player.sendMessage(Text.c("#ff6961Usage: /$label search <category> <text>"))
+                    return true
+                }
+                menus.search(player, category, query)
+            }
             "reload" -> {
                 if (!sender.hasPermission("omnicraft.reload")) {
                     sender.sendMessage(Text.c(config.message("errors.no-permission", "#ff6961No permission.")))
@@ -133,8 +143,8 @@ class OmniCraftCommand(
 
     override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): List<String> {
         return when (args.size) {
-            1 -> listOf("open", "settings", "browse", "reload", "debug", "validate", "export", "import").filter { it.startsWith(args[0], true) }
-            2 -> if (args[0].equals("open", true) || args[0].equals("export", true) || args[0].equals("import", true)) {
+            1 -> listOf("open", "settings", "browse", "search", "reload", "debug", "validate", "export", "import").filter { it.startsWith(args[0], true) }
+            2 -> if (args[0].equals("open", true) || args[0].equals("export", true) || args[0].equals("import", true) || args[0].equals("search", true)) {
                 config.categories.map { it.id }.filter { it.startsWith(args[1], true) }
             } else emptyList()
             else -> emptyList()

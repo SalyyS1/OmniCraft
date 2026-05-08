@@ -1,6 +1,6 @@
 name: OmniCraft
 version: "0.1.0"
-main: com.salyvn.omnicraft.OmniCraftPlugin
+main: com.salyvn.omnicraft.OmniCraft26Plugin
 api-version: "1.21"
 authors: [SalyVn]
 description: OmniCraft build for the Paper 26.x line.

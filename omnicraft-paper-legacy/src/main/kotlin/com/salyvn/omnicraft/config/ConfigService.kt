@@ -19,6 +19,7 @@ import org.bukkit.configuration.file.YamlConfiguration
 import java.io.File
 
 class ConfigService(private val plugin: OmniCraftPlugin) {
+    private val writer = RecipeWriter()
     var categories: List<CraftCategory> = emptyList()
         private set
     var messages: YamlConfiguration = YamlConfiguration()
@@ -46,6 +47,44 @@ class ConfigService(private val plugin: OmniCraftPlugin) {
     fun recipe(anyId: String): CraftRecipe? {
         return categories.asSequence().flatMap { it.recipes.asSequence() }
             .firstOrNull { it.id.equals(anyId, ignoreCase = true) || "${it.categoryId}:${it.id}".equals(anyId, ignoreCase = true) }
+    }
+
+    fun recipeFile(categoryId: String, recipeId: String): File {
+        return File(plugin.dataFolder, "category/$categoryId/$recipeId.yml")
+    }
+
+    fun saveRecipe(recipe: CraftRecipe) {
+        writer.saveAtomic(recipeFile(recipe.categoryId, recipe.id), recipe)
+        reload()
+    }
+
+    fun deleteRecipe(categoryId: String, recipeId: String): Boolean {
+        val deleted = recipeFile(categoryId, recipeId).delete()
+        reload()
+        return deleted
+    }
+
+    fun setConfig(path: String, value: Any?) {
+        plugin.config.set(path, value)
+        plugin.saveConfig()
+        plugin.reloadConfig()
+    }
+
+    fun pluginConfigBoolean(path: String): Boolean {
+        return plugin.config.getBoolean(path)
+    }
+
+    fun loadFavorites(playerId: String): MutableSet<String> {
+        val file = File(plugin.dataFolder, "favorites.yml")
+        if (!file.exists()) return mutableSetOf()
+        return YamlConfiguration.loadConfiguration(file).getStringList(playerId).toMutableSet()
+    }
+
+    fun saveFavorites(playerId: String, keys: Set<String>) {
+        val file = File(plugin.dataFolder, "favorites.yml")
+        val yaml = if (file.exists()) YamlConfiguration.loadConfiguration(file) else YamlConfiguration()
+        yaml.set(playerId, keys.sorted())
+        writer.saveAtomic(file, yaml)
     }
 
     fun validate(): List<String> {

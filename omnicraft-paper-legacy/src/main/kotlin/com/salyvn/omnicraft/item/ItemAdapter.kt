@@ -1,9 +1,9 @@
 package com.salyvn.omnicraft.item
 
 import com.salyvn.omnicraft.core.CraftItem
+import com.salyvn.omnicraft.core.ItemMode
 import com.salyvn.omnicraft.core.InventoryEntry
 import com.salyvn.omnicraft.core.ItemKey
-import com.salyvn.omnicraft.core.ItemMode
 import com.salyvn.omnicraft.core.ItemRisk
 import com.salyvn.omnicraft.hook.HookService
 import com.salyvn.omnicraft.util.Text
@@ -34,9 +34,13 @@ object ItemAdapter {
     }
 
     fun fromCraftItem(item: CraftItem, amountOverride: Int? = null): ItemStack {
+        return tryFromCraftItem(item, amountOverride) ?: missingItem(item, amountOverride)
+    }
+
+    fun tryFromCraftItem(item: CraftItem, amountOverride: Int? = null): ItemStack? {
         val amount = (amountOverride ?: item.amount).coerceAtLeast(1)
         if (item.mode == ItemMode.MMOITEMS) {
-            hooks?.mmoItem(item.mmoType, item.mmoId, amount)?.let { return applyAdvancedEnchantments(it, item) }
+            return hooks?.mmoItem(item.mmoType, item.mmoId, amount)?.let { applyAdvancedEnchantments(it, item) }
         }
         val material = Material.matchMaterial(item.material) ?: Material.STONE
         val stack = ItemStack(material, amount)
@@ -48,6 +52,31 @@ object ItemAdapter {
             stack.itemMeta = meta
         }
         return applyAdvancedEnchantments(stack, item)
+    }
+
+    fun fromStack(stack: ItemStack): CraftItem {
+        val mmo = hooks?.mmoKey(stack)
+        val meta = stack.itemMeta
+        return if (mmo != null) {
+            CraftItem(
+                mode = ItemMode.MMOITEMS,
+                material = stack.type.name,
+                amount = stack.amount.coerceAtLeast(1),
+                name = meta?.displayName()?.let { Text.plain(it) },
+                lore = meta?.lore()?.map { Text.plain(it) } ?: emptyList(),
+                mmoType = mmo.first,
+                mmoId = mmo.second
+            )
+        } else {
+            CraftItem(
+                mode = ItemMode.VANILLA,
+                material = stack.type.name,
+                amount = stack.amount.coerceAtLeast(1),
+                uid = meta?.persistentDataContainer?.get(uidKey, PersistentDataType.STRING),
+                name = meta?.displayName()?.let { Text.plain(it) },
+                lore = meta?.lore()?.map { Text.plain(it) } ?: emptyList()
+            )
+        }
     }
 
     private fun risk(item: ItemStack): ItemRisk {
@@ -62,5 +91,18 @@ object ItemAdapter {
             result = hooks?.applyAdvancedEnchant(result, enchant.id, enchant.level) ?: result
         }
         return result
+    }
+
+    private fun missingItem(item: CraftItem, amountOverride: Int?): ItemStack {
+        val stack = ItemStack(Material.BARRIER, (amountOverride ?: item.amount).coerceAtLeast(1).coerceAtMost(64))
+        stack.editMeta {
+            it.displayName(Text.c("#ff6961Missing item hook"))
+            it.lore(listOf(
+                Text.c("#d6f7ffMode: ${item.mode}"),
+                Text.c("#d6f7ffType: ${item.mmoType ?: "-"}"),
+                Text.c("#d6f7ffId: ${item.mmoId ?: item.material}")
+            ))
+        }
+        return stack
     }
 }

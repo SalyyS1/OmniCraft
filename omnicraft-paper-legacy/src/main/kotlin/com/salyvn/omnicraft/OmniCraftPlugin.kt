@@ -11,7 +11,9 @@ import com.salyvn.omnicraft.hook.HookService
 import com.salyvn.omnicraft.item.ItemAdapter
 import org.bukkit.plugin.java.JavaPlugin
 
-class OmniCraftPlugin : JavaPlugin() {
+open class OmniCraftPlugin : JavaPlugin() {
+    protected open val platformLine: String = "paper-legacy"
+
     lateinit var configService: ConfigService
         private set
     lateinit var craftService: CraftService
@@ -48,7 +50,7 @@ class OmniCraftPlugin : JavaPlugin() {
 
         server.pluginManager.registerEvents(GuiListener(this, menuService, craftService), this)
         logHookStatus()
-        logger.info("OmniCraft enabled")
+        logger.info("OmniCraft enabled on $platformLine")
     }
 
     override fun onDisable() {

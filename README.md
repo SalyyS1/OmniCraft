@@ -18,6 +18,7 @@ Put the correct OmniCraft jar in `plugins/`, start the server once, then edit:
 | `/oc open <category>` | `omnicraft.category.<id>` or `omnicraft.open.<id>` | Open a category directly |
 | `/oc settings` | `omnicraft.settings` | Open settings menu |
 | `/oc browse` | `omnicraft.admin` | Browse admin recipe menu |
+| `/oc search <category> <text>` | `omnicraft.use` | Search recipes by output, ingredient, MMOItems type or id |
 | `/oc reload` | `omnicraft.reload` | Reload config, messages, recipes |
 | `/oc debug recipe <id>` | `omnicraft.debug` | Dry-run a recipe check |
 | `/oc validate` | `omnicraft.validate` | Validate loaded recipes |
@@ -35,13 +36,20 @@ Put the correct OmniCraft jar in `plugins/`, start the server once, then edit:
 - Optional title countdown before craft.
 - MMOItems output and item matching.
 - AdvancedEnchantments output enchant application.
+- AdvancedEnchantments keep/destroy/extract behavior for consumed upgrade ingredients.
 - Vault money requirement.
 - PlaceholderAPI conditions.
 - Daily and weekly craft limits.
 - Rare craft broadcast.
 - Craft history log.
 - Config validation and category import/export.
+- Admin settings, browse, recipe editor, cursor item serialization, and delete mode.
 - Server-side anti-dupe transaction flow with rollback.
+
+## Build Outputs
+
+- `OmniCraft-Legacy.jar`: Paper `1.20` to `1.21.11`, Java 21 runtime.
+- `OmniCraft-26.jar`: Paper `26.1.x`, Java 25 runtime, Paper API `26.1.2.build.+`.
 
 ## Recipe API Shape
 

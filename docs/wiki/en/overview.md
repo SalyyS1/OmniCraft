@@ -16,6 +16,7 @@ Use one of these commands:
 | `/ocraft` | Open main menu |
 | `/craft` | Open main menu |
 | `/oc open <category>` | Open one category directly |
+| `/oc search <category> <text>` | Search recipes by output, ingredient, MMOItems type or id |
 
 Material items show the original name and lore. OmniCraft only adds one requirement line. Red means missing. Green means enough.
 
@@ -24,7 +25,7 @@ Material items show the original name and lore. OmniCraft only adds one requirem
 | Command | Use |
 | --- | --- |
 | `/oc settings` | Open settings GUI |
-| `/oc browse` | Browse recipes |
+| `/oc browse` | Browse and edit recipes |
 | `/oc reload` | Reload files |
 | `/oc validate` | Check recipe errors |
 | `/oc debug recipe <id>` | Dry-run a recipe for your player |
@@ -67,6 +68,17 @@ plugins/OmniCraft/
 `messages.yml` controls every GUI line, title, warning, error, success message, and broadcast.
 
 Each recipe file controls one output item.
+
+## Admin Editor
+
+Use `/oc browse`, choose a category, then click a recipe to edit it. The editor uses the same 5x5 ingredient grid as the player craft station.
+
+- Put an item on your cursor and click an ingredient slot to serialize it as an ingredient.
+- Put an item on your cursor and click the output slot to serialize it as the output.
+- Left click an ingredient to increase the required amount.
+- Right click an ingredient to reduce the required amount.
+- Toggle recipe enabled state, craft time, and AdvancedEnchantments extraction mode from the bottom row.
+- Toggle Delete Mode in browse/category view, then click a recipe to delete its YAML file.
 
 ## Recipe Example
 
@@ -131,7 +143,7 @@ OmniCraft can apply custom enchants to crafted outputs through AdvancedEnchantme
 
 - `EXTRACT`: split AE enchants into AE books using `/ae givebook`.
 - `DESTROY`: consumed AE enchants are lost.
-- `KEEP`: currently warns only, because the base item is consumed.
+- `KEEP`: moves AdvancedEnchantments from the consumed base ingredient onto the crafted output.
 
 Returned books use `advanced-enchantments.extraction.fixed-success-rate`, `fixed-destroy-rate`, and optional `per-enchant` overrides.
 

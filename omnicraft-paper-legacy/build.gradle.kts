@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
     implementation(project(":omnicraft-core"))
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.1.10")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.0")
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     compileOnly("net.Indyuce:MMOItems-API:6.10.1-SNAPSHOT")
     compileOnly("io.lumine:MythicLib-dist:1.7.1-SNAPSHOT")

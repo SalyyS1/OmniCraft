@@ -16,6 +16,7 @@ Dùng một trong các lệnh:
 | `/ocraft` | Mở main menu |
 | `/craft` | Mở main menu |
 | `/oc open <category>` | Mở thẳng một category |
+| `/oc search <category> <text>` | Tìm recipe theo output, ingredient, MMOItems type hoặc id |
 
 Vật phẩm nguyên liệu giữ nguyên tên và lore gốc. OmniCraft chỉ thêm một dòng requirement. Đỏ là thiếu. Xanh là đủ.
 
@@ -24,7 +25,7 @@ Vật phẩm nguyên liệu giữ nguyên tên và lore gốc. OmniCraft chỉ t
 | Lệnh | Công dụng |
 | --- | --- |
 | `/oc settings` | Mở GUI settings |
-| `/oc browse` | Browse recipe |
+| `/oc browse` | Browse và edit recipe |
 | `/oc reload` | Reload file |
 | `/oc validate` | Kiểm tra lỗi recipe |
 | `/oc debug recipe <id>` | Test recipe theo player hiện tại |
@@ -67,6 +68,17 @@ plugins/OmniCraft/
 `messages.yml` chỉnh toàn bộ GUI line, title, warning, error, success message và broadcast.
 
 Mỗi file recipe là một thành phẩm.
+
+## Editor admin
+
+Dùng `/oc browse`, chọn category, rồi click recipe để edit. Editor dùng cùng lưới ingredient 5x5 như GUI craft của member.
+
+- Cầm item trên cursor rồi click ô ingredient để serialize item đó làm nguyên liệu.
+- Cầm item trên cursor rồi click ô output để serialize item đó làm thành phẩm.
+- Chuột trái vào ingredient để tăng số lượng yêu cầu.
+- Chuột phải vào ingredient để giảm số lượng yêu cầu.
+- Toggle enabled, craft time và AdvancedEnchantments extraction ở hàng dưới.
+- Bật Delete Mode trong browse/category, rồi click recipe để xóa file YAML của recipe đó.
 
 ## Ví dụ recipe
 
@@ -131,7 +143,7 @@ OmniCraft có thể apply custom enchant vào output bằng AdvancedEnchantments
 
 - `EXTRACT`: tách AE enchant thành sách AE bằng `/ae givebook`.
 - `DESTROY`: AE enchant bị mất.
-- `KEEP`: hiện chỉ cảnh báo, vì item nền đã bị consume.
+- `KEEP`: chuyển AE enchant từ nguyên liệu nền sang output được craft.
 
 Sách trả lại dùng `advanced-enchantments.extraction.fixed-success-rate`, `fixed-destroy-rate` và override trong `per-enchant` nếu có.
 

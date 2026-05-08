@@ -110,6 +110,7 @@ class CraftService(
             val plan = calculator.selectionPlan(recipe, inventory, crafts)
             val removed = mutableListOf<Pair<Int, ItemStack>>()
             val extractedEnchants = mutableListOf<ExtractedAdvancedEnchant>()
+            val keptEnchantGroups = mutableListOf<List<ExtractedAdvancedEnchant>>()
             val chargedMoney = recipe.requirements.money * crafts
             for ((_, entries) in plan) {
                 for (entry in entries) {
@@ -117,7 +118,9 @@ class CraftService(
                     val clone = stack.clone()
                     clone.amount = entry.amount
                     removed += entry.slot to clone
-                    extractedEnchants += readExtractableAdvancedEnchants(clone)
+                    val groups = readExtractableAdvancedEnchantGroups(clone)
+                    extractedEnchants += groups.flatten()
+                    keptEnchantGroups += groups
                     stack.amount -= entry.amount
                     player.inventory.setItem(entry.slot, if (stack.amount <= 0) null else stack)
                 }
@@ -129,7 +132,14 @@ class CraftService(
                 return
             }
 
-            val output = outputStacks(recipe, crafts)
+            val output = outputStacks(recipe, crafts, keptEnchantGroups)
+            if (output == null) {
+                rollback(player, removed)
+                hooks.deposit(player, chargedMoney)
+                audit.record(player, recipe, crafts, "rollback", "output-hook")
+                player.sendMessage(Text.c(config.message("errors.missing-hook", "#ff6961Required hook is missing: {hook}").replace("{hook}", "MMOItems")))
+                return
+            }
             val leftover = player.inventory.addItem(*output.toTypedArray())
             if (leftover.isNotEmpty()) {
                 rollback(player, removed)
@@ -171,9 +181,11 @@ class CraftService(
     private fun missingHookFailures(recipe: CraftRecipe): List<String> {
         val requiresAe = recipe.output.advancedEnchantments.isNotEmpty() ||
             recipe.ingredients.any { it.item.advancedEnchantments.isNotEmpty() }
-        if (!requiresAe) return emptyList()
+        val failures = mutableListOf<String>()
+        if (recipe.output.mode == com.salyvn.omnicraft.core.ItemMode.MMOITEMS && !hooks.enabled("MMOItems")) failures += "MMOItems"
         val strict = plugin.config.getBoolean("advanced-enchantments.missing-hook-disables-ae-recipes", false)
-        return if (strict && !hooks.enabled("AdvancedEnchantments")) listOf("AdvancedEnchantments") else emptyList()
+        if (requiresAe && strict && !hooks.enabled("AdvancedEnchantments")) failures += "AdvancedEnchantments"
+        return failures
     }
 
     private fun rollback(player: Player, removed: List<Pair<Int, ItemStack>>) {
@@ -188,23 +200,31 @@ class CraftService(
         plugin.logger.warning("craft rollback player=${player.name}")
     }
 
-    private fun outputStacks(recipe: CraftRecipe, crafts: Int): List<ItemStack> {
+    private fun outputStacks(recipe: CraftRecipe, crafts: Int, keptEnchantGroups: List<List<ExtractedAdvancedEnchant>>): List<ItemStack>? {
         var remaining = recipe.output.amount * crafts
-        val base = ItemAdapter.fromCraftItem(recipe.output, 1)
+        val base = ItemAdapter.tryFromCraftItem(recipe.output, 1) ?: return null
         val maxStack = base.maxStackSize.coerceAtLeast(1)
         val stacks = mutableListOf<ItemStack>()
+        var keepIndex = 0
         while (remaining > 0) {
+            if (recipe.extraction.enchant == ExtractionMode.KEEP && keepIndex < keptEnchantGroups.size) {
+                val group = keptEnchantGroups[keepIndex++]
+                val stack = ItemAdapter.tryFromCraftItem(recipe.output, 1) ?: return null
+                stacks += if (group.isEmpty()) stack else applyKeptAdvancedEnchants(stack, group)
+                remaining--
+                continue
+            }
             val take = minOf(remaining, maxStack)
-            stacks += ItemAdapter.fromCraftItem(recipe.output, take)
+            stacks += ItemAdapter.tryFromCraftItem(recipe.output, take) ?: return null
             remaining -= take
         }
         return stacks
     }
 
-    private fun readExtractableAdvancedEnchants(item: ItemStack): List<ExtractedAdvancedEnchant> {
+    private fun readExtractableAdvancedEnchantGroups(item: ItemStack): List<List<ExtractedAdvancedEnchant>> {
         val enchants = hooks.advancedEnchantments(item)
         if (enchants.isEmpty()) return emptyList()
-        return (1..item.amount.coerceAtLeast(1)).flatMap {
+        return (1..item.amount.coerceAtLeast(1)).map {
             enchants.map { (id, level) -> ExtractedAdvancedEnchant(id, level) }
         }
     }
@@ -216,7 +236,7 @@ class CraftService(
                 player.sendMessage(Text.c(config.message("risk.advanced-destroyed", "#ff6961AdvancedEnchantments on consumed materials were destroyed.")))
             }
             ExtractionMode.KEEP -> {
-                player.sendMessage(Text.c(config.message("risk.advanced-kept-warning", "#ffd166AdvancedEnchantments were detected, but KEEP cannot preserve consumed base items yet.")))
+                player.sendMessage(Text.c(config.message("risk.advanced-kept", "#71f79fAdvancedEnchantments were kept on crafted output.")))
             }
             ExtractionMode.EXTRACT -> {
                 var success = 0
@@ -252,6 +272,14 @@ class CraftService(
         return plugin.config.getDouble("advanced-enchantments.extraction.per-enchant.$enchantId.book-destroy-rate",
             plugin.config.getDouble("advanced-enchantments.extraction.fixed-destroy-rate", 0.0)
         ).coerceIn(0.0, 100.0)
+    }
+
+    private fun applyKeptAdvancedEnchants(stack: ItemStack, enchants: List<ExtractedAdvancedEnchant>): ItemStack {
+        var result = stack
+        for (enchant in enchants) {
+            result = hooks.applyAdvancedEnchant(result, enchant.id, enchant.level)
+        }
+        return result
     }
 
     private data class ExtractedAdvancedEnchant(val id: String, val level: Int)

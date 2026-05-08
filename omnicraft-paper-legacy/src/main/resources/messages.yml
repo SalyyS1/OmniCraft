@@ -36,7 +36,7 @@ risk:
   extraction-rate: "#d6f7ffExtraction success: {rate}%"
   advanced-extracted: "#71f79fExtracted {success} AdvancedEnchantments. Failed {failed}."
   advanced-destroyed: "#ff6961AdvancedEnchantments on consumed materials were destroyed."
-  advanced-kept-warning: "#ffd166AdvancedEnchantments were detected, but KEEP cannot preserve consumed base items yet."
+  advanced-kept: "#71f79fAdvancedEnchantments were kept on crafted output."
 
 # Craft countdown title.
 titles:
