@@ -4,7 +4,7 @@
 
 ## OmniCraft là gì
 
-OmniCraft là plugin trạm chế tạo cho server Paper RPG. Member mở menu, chọn category, xem nguyên liệu cần có, rồi craft bằng chuột trái, chuột phải hoặc shift click.
+OmniCraft là plugin trạm chế tạo cho server Paper RPG. Member mở menu, chọn category, xem nguyên liệu cần có, rồi craft bằng cách chuột trái/chuột phải/shift click trực tiếp vào item thành phẩm.
 
 ## Hướng dẫn cho member
 

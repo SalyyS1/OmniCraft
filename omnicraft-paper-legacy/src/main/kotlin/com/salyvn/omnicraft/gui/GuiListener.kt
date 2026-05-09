@@ -65,9 +65,7 @@ class GuiListener(
             GuiType.RECIPE -> {
                 val recipe = plugin.configService.recipe(holder.categoryId ?: return, holder.recipeId ?: return) ?: return
                 when (event.slot) {
-                    45 -> craft.craft(player, recipe, CraftClickMode.LEFT) { menus.openRecipe(player, recipe) }
-                    46 -> craft.craft(player, recipe, CraftClickMode.RIGHT) { menus.openRecipe(player, recipe) }
-                    47 -> craft.craft(player, recipe, CraftClickMode.SHIFT) { menus.openRecipe(player, recipe) }
+                    MenuService.OUTPUT_SLOT -> craft.craft(player, recipe, craftMode(event.click)) { menus.openRecipe(player, recipe) }
                     49 -> menus.openCategory(player, recipe.categoryId)
                 }
             }
@@ -239,6 +237,14 @@ class GuiListener(
     private fun toggleSetting(path: String, player: Player) {
         plugin.configService.setConfig(path, !plugin.config.getBoolean(path))
         menus.openSettings(player)
+    }
+
+    private fun craftMode(click: ClickType): CraftClickMode {
+        return when {
+            click.isShiftClick -> CraftClickMode.SHIFT
+            click == ClickType.RIGHT -> CraftClickMode.RIGHT
+            else -> CraftClickMode.LEFT
+        }
     }
 
     private fun backFromBrowser(player: Player, holder: OmniHolder) {

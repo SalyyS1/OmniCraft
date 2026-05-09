@@ -4,7 +4,7 @@
 
 ## What OmniCraft Is
 
-OmniCraft is a crafting station plugin for Paper RPG servers. Players open a menu, choose a category, inspect the required materials, then craft with left click, right click, or shift click.
+OmniCraft is a crafting station plugin for Paper RPG servers. Players open a menu, choose a category, inspect the required materials, then craft by left/right/shift clicking the output item.
 
 ## Player Guide
 

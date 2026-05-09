@@ -32,7 +32,7 @@ Put the correct OmniCraft jar in `plugins/`, start the server once, then edit:
 - 5x5 ingredient grid.
 - Requirement lines preserve original item name/lore and disable italic text.
 - Material preview supports stack amounts above 64 inside GUI.
-- Left/right/shift craft amounts.
+- Craft by left/right/shift clicking the output item.
 - Optional title countdown before craft.
 - MMOItems output and item matching.
 - AdvancedEnchantments output enchant application.

@@ -112,9 +112,12 @@ class MenuService(
 
         inv.setItem(OUTPUT_SLOT, productIcon(player, recipe))
         inv.setItem(43, warningIcon(recipe))
-        inv.setItem(45, named(Material.LIME_DYE, "#71f79fCraft x${recipe.craft.leftAmount}", listOf("#d6f7ffLeft click.")))
-        inv.setItem(46, named(Material.EMERALD, "#71f79fCraft x${recipe.craft.rightAmount}", listOf("#d6f7ffRight click.")))
-        inv.setItem(47, named(Material.NETHER_STAR, "#71f79fCraft Max", listOf("#d6f7ffShift click.")))
+        inv.setItem(45, named(Material.PAPER, "#7cf5ffCraft Controls", listOf(
+            "#d6f7ffClick the output item.",
+            "#d6f7ffLeft: craft x${recipe.craft.leftAmount}",
+            "#d6f7ffRight: craft x${recipe.craft.rightAmount}",
+            "#d6f7ffShift: craft max"
+        )))
         inv.setItem(48, named(Material.BOOK, "#7cf5ffMissing Materials", missingLore(check.missing, recipe)))
         inv.setItem(49, named(Material.ARROW, "#d6f7ffBack", listOf("#8ea3b0Return to category.")))
         player.openInventory(inv)
@@ -480,6 +483,9 @@ class MenuService(
             if (check.levelMissing > 0) lore += Text.c("#ff6961Need ${check.levelMissing} more levels")
             if (check.moneyMissing > 0.0) lore += Text.c("#ff6961Need ${check.moneyMissing} money")
             lore += Text.c("#8ea3b0Available crafts: ${check.craftableAmount}")
+            lore += Text.c("#d6f7ffLeft click: craft x${recipe.craft.leftAmount}")
+            lore += Text.c("#d6f7ffRight click: craft x${recipe.craft.rightAmount}")
+            lore += Text.c("#d6f7ffShift click: craft max")
             it.lore(lore)
         }
         return item
