@@ -40,7 +40,7 @@ open class OmniCraftPlugin : JavaPlugin() {
         usageService.load()
         auditService = AuditService(this)
         craftService = CraftService(this, configService, hooks, usageService, auditService)
-        menuService = MenuService(configService, craftService)
+        menuService = MenuService(configService, craftService, hooks)
 
         val command = OmniCraftCommand(this, configService, menuService, craftService)
         listOf("omnicraft", "oc", "ocraft", "craft").forEach { name ->

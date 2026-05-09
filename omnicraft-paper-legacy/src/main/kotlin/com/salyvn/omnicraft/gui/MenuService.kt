@@ -1,10 +1,19 @@
 package com.salyvn.omnicraft.gui
 
 import com.salyvn.omnicraft.config.ConfigService
+import com.salyvn.omnicraft.core.CraftBehavior
+import com.salyvn.omnicraft.core.CraftLimits
 import com.salyvn.omnicraft.core.CraftIngredient
+import com.salyvn.omnicraft.core.CraftItem
 import com.salyvn.omnicraft.core.ExtractionMode
+import com.salyvn.omnicraft.core.ExtractionPolicy
 import com.salyvn.omnicraft.core.CraftRecipe
+import com.salyvn.omnicraft.core.CraftRequirements
+import com.salyvn.omnicraft.core.CraftTime
+import com.salyvn.omnicraft.core.ItemMode
+import com.salyvn.omnicraft.core.RecipeOptions
 import com.salyvn.omnicraft.craft.CraftService
+import com.salyvn.omnicraft.hook.HookService
 import com.salyvn.omnicraft.item.ItemAdapter
 import com.salyvn.omnicraft.util.Text
 import org.bukkit.Bukkit
@@ -12,11 +21,13 @@ import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
+import java.util.Locale
 import java.util.UUID
 
 class MenuService(
     private val config: ConfigService,
-    private val craftService: CraftService
+    private val craftService: CraftService,
+    private val hooks: HookService
 ) {
     private val favorites = mutableMapOf<UUID, MutableSet<String>>()
     private val craftableOnly = mutableSetOf<UUID>()
@@ -32,6 +43,12 @@ class MenuService(
             37, 38, 39, 40, 41
         )
         const val OUTPUT_SLOT = 34
+        const val ACTION_NEW_RECIPE = "new_recipe"
+        const val ACTION_SET_OUTPUT = "set_output"
+        const val ACTION_SET_INGREDIENT = "set_ingredient"
+        val ADMIN_RECIPE_SLOTS = listOf(10, 12, 14, 16, 19, 21, 23, 25, 28, 30, 32, 34, 37, 39, 41, 43)
+        val ADMIN_CREATE_SLOTS = ADMIN_RECIPE_SLOTS.map { it + 1 }
+        val BROWSER_ITEM_SLOTS = (10..16) + (19..25) + (28..34) + (37..43)
     }
 
     fun openMain(player: Player) {
@@ -138,9 +155,12 @@ class MenuService(
         val inv = Bukkit.createInventory(holder, 54, Text.c("#7cf5ffEdit ${category.title}"))
         holder.attach(inv)
         fill(inv)
-        category.recipes.forEachIndexed { index, recipe ->
-            val slot = 10 + index + (index / 7) * 2
-            if (slot < 45) inv.setItem(slot, recipeIcon(player, recipe))
+        category.recipes.take(ADMIN_RECIPE_SLOTS.size).forEachIndexed { index, recipe ->
+            inv.setItem(ADMIN_RECIPE_SLOTS[index], recipeIcon(player, recipe))
+            inv.setItem(ADMIN_CREATE_SLOTS[index], createRecipeIcon())
+        }
+        if (category.recipes.size < ADMIN_CREATE_SLOTS.size) {
+            inv.setItem(ADMIN_CREATE_SLOTS[category.recipes.size.coerceAtLeast(0)], createRecipeIcon())
         }
         inv.setItem(49, named(Material.ARROW, "#d6f7ffBack", listOf("#8ea3b0Return to browser.")))
         inv.setItem(53, named(Material.BARRIER, "#ff6961Delete Mode: ${if (deleteMode.contains(player.uniqueId)) "ON" else "OFF"}", listOf("#8ea3b0When ON, click a recipe to delete it.")))
@@ -156,6 +176,12 @@ class MenuService(
             val item = ItemAdapter.fromCraftItem(ingredient.item)
             item.amount = ingredient.requiredAmount.coerceAtLeast(1)
             inv.setItem(INGREDIENT_SLOTS[index], item)
+        }
+        INGREDIENT_SLOTS.drop(recipe.ingredients.size).forEach { slot ->
+            inv.setItem(slot, named(Material.LIME_STAINED_GLASS_PANE, "#71f79fAdd Ingredient", listOf(
+                "#d6f7ffClick to browse items.",
+                "#8ea3b0Or hold an item on cursor and click."
+            )))
         }
         inv.setItem(OUTPUT_SLOT, ItemAdapter.fromCraftItem(recipe.output))
         inv.setItem(45, named(if (recipe.options.enabled) Material.LIME_DYE else Material.GRAY_DYE, "#7cf5ffEnabled: ${recipe.options.enabled}", listOf("#d6f7ffClick to toggle.")))
@@ -197,6 +223,21 @@ class MenuService(
         openEditor(player, saved)
     }
 
+    fun setIngredientFromItem(player: Player, recipe: CraftRecipe, slot: Int, item: CraftItem) {
+        val index = INGREDIENT_SLOTS.indexOf(slot)
+        if (index < 0) return
+        val ingredients = recipe.ingredients.toMutableList()
+        val ingredient = CraftIngredient(
+            id = ingredients.getOrNull(index)?.id ?: "ingredient_${index + 1}",
+            item = item.copy(amount = 1),
+            requiredAmount = ingredients.getOrNull(index)?.requiredAmount ?: item.amount.coerceAtLeast(1)
+        )
+        if (index < ingredients.size) ingredients[index] = ingredient else ingredients += ingredient
+        val saved = recipe.copy(ingredients = ingredients)
+        config.saveRecipe(saved)
+        openEditor(player, saved)
+    }
+
     fun adjustIngredient(player: Player, recipe: CraftRecipe, slot: Int, delta: Int) {
         val index = INGREDIENT_SLOTS.indexOf(slot)
         val current = recipe.ingredients.getOrNull(index) ?: return
@@ -204,6 +245,16 @@ class MenuService(
         val next = (current.requiredAmount + delta).coerceAtLeast(1)
         ingredients[index] = current.copy(requiredAmount = next)
         val saved = recipe.copy(ingredients = ingredients)
+        config.saveRecipe(saved)
+        openEditor(player, saved)
+    }
+
+    fun removeIngredient(player: Player, recipe: CraftRecipe, slot: Int) {
+        val index = INGREDIENT_SLOTS.indexOf(slot)
+        if (index < 0 || index >= recipe.ingredients.size) return
+        val ingredients = recipe.ingredients.toMutableList()
+        ingredients.removeAt(index)
+        val saved = recipe.copy(ingredients = ingredients.mapIndexed { i, ingredient -> ingredient.copy(id = "ingredient_${i + 1}") })
         config.saveRecipe(saved)
         openEditor(player, saved)
     }
@@ -243,6 +294,130 @@ class MenuService(
 
     fun isDeleteMode(player: Player): Boolean {
         return deleteMode.contains(player.uniqueId)
+    }
+
+    fun createRecipeFromCursor(player: Player, categoryId: String, stack: ItemStack) {
+        createRecipeFromItem(player, categoryId, ItemAdapter.fromStack(stack))
+    }
+
+    fun createRecipeFromItem(player: Player, categoryId: String, output: CraftItem) {
+        val category = config.category(categoryId) ?: return
+        val id = uniqueRecipeId(category.id, output)
+        val saved = CraftRecipe(
+            id = id,
+            categoryId = category.id,
+            displayName = output.name ?: output.mmoId ?: output.material,
+            output = output.copy(amount = output.amount.coerceAtLeast(1)),
+            ingredients = emptyList(),
+            requirements = CraftRequirements(),
+            craft = CraftBehavior(),
+            craftTime = CraftTime(),
+            extraction = ExtractionPolicy(),
+            limits = CraftLimits(),
+            options = RecipeOptions(enabled = false)
+        )
+        config.saveRecipe(saved)
+        player.sendMessage(Text.c("#71f79fCreated recipe ${saved.id}. Add ingredients, then enable it."))
+        openEditor(player, saved)
+    }
+
+    fun openItemModeBrowser(player: Player, categoryId: String, recipeId: String?, action: String, editorSlot: Int = -1) {
+        val holder = OmniHolder(GuiType.ITEM_MODE, categoryId, recipeId, action = action, editorSlot = editorSlot)
+        val inv = Bukkit.createInventory(holder, 27, Text.c("#7cf5ffSelect Item Source"))
+        holder.attach(inv)
+        fill(inv)
+        inv.setItem(11, named(Material.GRASS_BLOCK, "#71f79fVanilla Items", listOf("#d6f7ffBrowse Minecraft materials.")))
+        inv.setItem(15, named(Material.DIAMOND_SWORD, "#7cf5ffMMOItems", listOf(
+            if (hooks.enabled("MMOItems")) "#d6f7ffBrowse MMOItems types." else "#ff6961MMOItems is not enabled."
+        )))
+        inv.setItem(22, named(Material.ARROW, "#d6f7ffBack", listOf("#8ea3b0Return to editor.")))
+        player.openInventory(inv)
+    }
+
+    fun openVanillaBrowser(player: Player, categoryId: String, recipeId: String?, action: String, editorSlot: Int, page: Int) {
+        val materials = vanillaMaterials()
+        val holder = OmniHolder(GuiType.VANILLA_BROWSER, categoryId, recipeId, action = action, editorSlot = editorSlot, page = page.coerceAtLeast(0))
+        val inv = Bukkit.createInventory(holder, 54, Text.c("#7cf5ffVanilla Items"))
+        holder.attach(inv)
+        fill(inv)
+        pageItems(materials, page).forEachIndexed { index, material ->
+            inv.setItem(BROWSER_ITEM_SLOTS[index], named(material, "#d6f7ff${material.name}", listOf("#8ea3b0Click to select.")))
+        }
+        browserNav(inv, page, materials.size)
+        player.openInventory(inv)
+    }
+
+    fun openMmoTypeBrowser(player: Player, categoryId: String, recipeId: String?, action: String, editorSlot: Int, page: Int) {
+        val types = hooks.mmoTypes()
+        val holder = OmniHolder(GuiType.MMO_TYPE_BROWSER, categoryId, recipeId, action = action, editorSlot = editorSlot, page = page.coerceAtLeast(0))
+        val inv = Bukkit.createInventory(holder, 54, Text.c("#7cf5ffMMOItems Types"))
+        holder.attach(inv)
+        fill(inv)
+        if (types.isEmpty()) {
+            inv.setItem(22, named(Material.BARRIER, "#ff6961No MMOItems types", listOf("#8ea3b0Install MMOItems or reload its items.")))
+        } else {
+            pageItems(types, page).forEachIndexed { index, type ->
+                inv.setItem(BROWSER_ITEM_SLOTS[index], named(Material.CHEST, "#7cf5ff$type", listOf("#d6f7ffClick to browse items.")))
+            }
+        }
+        browserNav(inv, page, types.size)
+        player.openInventory(inv)
+    }
+
+    fun openMmoItemBrowser(player: Player, categoryId: String, recipeId: String?, action: String, editorSlot: Int, type: String, page: Int) {
+        val ids = hooks.mmoItemIds(type)
+        val holder = OmniHolder(GuiType.MMO_ITEM_BROWSER, categoryId, recipeId, action = action, editorSlot = editorSlot, page = page.coerceAtLeast(0), itemType = type)
+        val inv = Bukkit.createInventory(holder, 54, Text.c("#7cf5ff$type Items"))
+        holder.attach(inv)
+        fill(inv)
+        if (ids.isEmpty()) {
+            inv.setItem(22, named(Material.BARRIER, "#ff6961No items in $type", listOf("#8ea3b0Create items in MMOItems first.")))
+        } else {
+            pageItems(ids, page).forEachIndexed { index, id ->
+                val preview = hooks.mmoItem(type, id, 1) ?: named(Material.PAPER, "#d6f7ff$id", listOf("#8ea3b0Click to select."))
+                inv.setItem(BROWSER_ITEM_SLOTS[index], preview)
+            }
+        }
+        browserNav(inv, page, ids.size)
+        player.openInventory(inv)
+    }
+
+    fun applyBrowserSelection(player: Player, holder: OmniHolder, item: CraftItem) {
+        when (holder.action) {
+            ACTION_NEW_RECIPE -> createRecipeFromItem(player, holder.categoryId ?: return, item)
+            ACTION_SET_OUTPUT -> {
+                val recipe = config.recipe(holder.categoryId ?: return, holder.recipeId ?: return) ?: return
+                val saved = recipe.copy(output = item, displayName = item.name ?: item.mmoId ?: item.material)
+                config.saveRecipe(saved)
+                openEditor(player, saved)
+            }
+            ACTION_SET_INGREDIENT -> {
+                val recipe = config.recipe(holder.categoryId ?: return, holder.recipeId ?: return) ?: return
+                setIngredientFromItem(player, recipe, holder.editorSlot, item)
+            }
+        }
+    }
+
+    fun selectVanilla(player: Player, holder: OmniHolder, slot: Int) {
+        val index = BROWSER_ITEM_SLOTS.indexOf(slot)
+        if (index < 0) return
+        val material = pageItems(vanillaMaterials(), holder.page).getOrNull(index) ?: return
+        applyBrowserSelection(player, holder, CraftItem(ItemMode.VANILLA, material.name, 1))
+    }
+
+    fun selectMmoType(player: Player, holder: OmniHolder, slot: Int) {
+        val index = BROWSER_ITEM_SLOTS.indexOf(slot)
+        if (index < 0) return
+        val type = pageItems(hooks.mmoTypes(), holder.page).getOrNull(index) ?: return
+        openMmoItemBrowser(player, holder.categoryId ?: return, holder.recipeId, holder.action ?: return, holder.editorSlot, type, 0)
+    }
+
+    fun selectMmoItem(player: Player, holder: OmniHolder, slot: Int) {
+        val type = holder.itemType ?: return
+        val index = BROWSER_ITEM_SLOTS.indexOf(slot)
+        if (index < 0) return
+        val id = pageItems(hooks.mmoItemIds(type), holder.page).getOrNull(index) ?: return
+        applyBrowserSelection(player, holder, CraftItem(ItemMode.MMOITEMS, Material.STONE.name, 1, mmoType = type, mmoId = id))
     }
 
     fun toggleFavorite(player: Player, recipe: CraftRecipe) {
@@ -352,6 +527,44 @@ class MenuService(
     }
 
     private fun state(path: String): String = if (config.pluginConfigBoolean(path)) "ON" else "OFF"
+
+    private fun createRecipeIcon(): ItemStack {
+        return named(Material.LIME_STAINED_GLASS_PANE, "#71f79fCreate Recipe", listOf(
+            "#d6f7ffClick to browse an output item.",
+            "#8ea3b0Or hold an item and click this slot."
+        ))
+    }
+
+    private fun uniqueRecipeId(categoryId: String, item: CraftItem): String {
+        val base = (item.mmoId ?: item.name ?: item.material)
+            .lowercase(Locale.ROOT)
+            .replace(Regex("[^a-z0-9_]+"), "_")
+            .trim('_')
+            .ifBlank { "recipe" }
+        var candidate = base
+        var index = 2
+        while (config.recipe(categoryId, candidate) != null) {
+            candidate = "${base}_$index"
+            index++
+        }
+        return candidate
+    }
+
+    private fun vanillaMaterials(): List<Material> {
+        return Material.entries.filter { it.isItem && !it.isAir }.sortedBy { it.name }
+    }
+
+    private fun <T> pageItems(values: List<T>, page: Int): List<T> {
+        val from = (page.coerceAtLeast(0) * BROWSER_ITEM_SLOTS.size).coerceAtMost(values.size)
+        val to = (from + BROWSER_ITEM_SLOTS.size).coerceAtMost(values.size)
+        return values.subList(from, to)
+    }
+
+    private fun browserNav(inv: Inventory, page: Int, total: Int) {
+        inv.setItem(45, named(Material.ARROW, "#d6f7ffPrevious", listOf("#8ea3b0Page ${page + 1}")))
+        inv.setItem(49, named(Material.BARRIER, "#ff6961Back", listOf("#8ea3b0Return to source selection.")))
+        inv.setItem(53, named(Material.ARROW, "#d6f7ffNext", listOf("#8ea3b0${total} entries")))
+    }
 
     private fun fill(inv: Inventory) {
         val pane = named(Material.GRAY_STAINED_GLASS_PANE, " ", emptyList())

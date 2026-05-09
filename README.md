@@ -43,8 +43,17 @@ Put the correct OmniCraft jar in `plugins/`, start the server once, then edit:
 - Rare craft broadcast.
 - Craft history log.
 - Config validation and category import/export.
-- Admin settings, browse, recipe editor, cursor item serialization, and delete mode.
+- Admin settings, browse, recipe creation, item browser, recipe editor, cursor item serialization, and delete mode.
 - Server-side anti-dupe transaction flow with rollback.
+
+## Admin Editing Flow
+
+- `/oc browse` opens categories.
+- In a category, each recipe has a green create slot beside it. Click it to choose an output from the built-in browser, or hold an item on your cursor and click/drag it into the green slot.
+- New recipes are saved disabled by default. Add ingredients, review settings, then enable the recipe.
+- In the editor, empty ingredient slots are green add slots. Click one to browse Vanilla/MMOItems items, or place an item from your cursor.
+- Click the output preview to replace the output through the same browser.
+- Left click an ingredient to increase the amount, right click to decrease it, shift-right click to remove it.
 
 ## Build Outputs
 

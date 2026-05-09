@@ -42,7 +42,7 @@ object ItemAdapter {
         if (item.mode == ItemMode.MMOITEMS) {
             return hooks?.mmoItem(item.mmoType, item.mmoId, amount)?.let { applyAdvancedEnchantments(it, item) }
         }
-        val material = Material.matchMaterial(item.material) ?: Material.STONE
+        val material = Material.matchMaterial(item.material) ?: return null
         val stack = ItemStack(material, amount)
         val meta = stack.itemMeta
         if (meta != null) {

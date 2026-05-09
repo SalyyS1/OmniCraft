@@ -60,10 +60,23 @@ class OmniCraftCommand(
             }
             "search" -> {
                 if (player == null) return true
+                if (!player.hasPermission("omnicraft.use")) {
+                    player.sendMessage(Text.c(config.message("errors.no-permission", "#ff6961No permission.")))
+                    return true
+                }
                 val category = args.getOrNull(1)
                 val query = args.drop(2).joinToString(" ").trim()
                 if (category == null || query.isBlank()) {
                     player.sendMessage(Text.c("#ff6961Usage: /$label search <category> <text>"))
+                    return true
+                }
+                val loaded = config.category(category)
+                if (loaded == null) {
+                    player.sendMessage(Text.c(config.message("errors.category-not-found", "#ff6961Category not found.")))
+                    return true
+                }
+                if (!player.hasPermission(loaded.permission) && !player.hasPermission("omnicraft.open.${loaded.id}")) {
+                    player.sendMessage(Text.c(config.message("errors.no-category-permission", "#ff6961You cannot open this category.")))
                     return true
                 }
                 menus.search(player, category, query)

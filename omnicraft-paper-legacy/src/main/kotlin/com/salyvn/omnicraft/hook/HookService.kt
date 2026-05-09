@@ -28,6 +28,29 @@ class HookService(private val plugin: JavaPlugin) {
         }.getOrNull()
     }
 
+    fun mmoTypes(): List<String> {
+        if (!enabled("MMOItems")) return emptyList()
+        return runCatching {
+            val pluginInstance = mmoPlugin() ?: return@runCatching emptyList()
+            val types = pluginInstance.javaClass.getMethod("getTypes").invoke(pluginInstance)
+            val names = types.javaClass.getMethod("getAllTypeNames").invoke(types) as? Iterable<*>
+            names?.mapNotNull { it?.toString() }?.sorted() ?: emptyList()
+        }.getOrDefault(emptyList())
+    }
+
+    fun mmoItemIds(type: String): List<String> {
+        if (!enabled("MMOItems")) return emptyList()
+        return runCatching {
+            val pluginInstance = mmoPlugin() ?: return@runCatching emptyList()
+            val types = pluginInstance.javaClass.getMethod("getTypes").invoke(pluginInstance)
+            val typeObject = types.javaClass.getMethod("get", String::class.java).invoke(types, type) ?: return@runCatching emptyList()
+            val templates = pluginInstance.javaClass.getMethod("getTemplates").invoke(pluginInstance)
+            val names = templates.javaClass.methods.firstOrNull { it.name == "getTemplateNames" && it.parameterTypes.size == 1 }
+                ?.invoke(templates, typeObject) as? Iterable<*>
+            names?.mapNotNull { it?.toString() }?.sorted() ?: emptyList()
+        }.getOrDefault(emptyList())
+    }
+
     fun applyAdvancedEnchant(stack: ItemStack, enchantId: String, level: Int): ItemStack {
         if (!enabled("AdvancedEnchantments")) return stack
         return runCatching {
@@ -92,6 +115,11 @@ class HookService(private val plugin: JavaPlugin) {
 
     fun enabled(name: String): Boolean {
         return Bukkit.getPluginManager().isPluginEnabled(name)
+    }
+
+    private fun mmoPlugin(): Any? {
+        val clazz = Class.forName("net.Indyuce.mmoitems.MMOItems")
+        return clazz.getField("plugin").get(null)
     }
 
     private fun parseEnchantResult(result: Any): Map<String, Int> {

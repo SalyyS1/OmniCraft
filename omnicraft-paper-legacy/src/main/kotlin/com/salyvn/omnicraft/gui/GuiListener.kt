@@ -24,9 +24,14 @@ class GuiListener(
     fun onClick(event: InventoryClickEvent) {
         val holder = event.view.topInventory.holder as? OmniHolder ?: return
         event.isCancelled = true
-        if (event.clickedInventory != event.view.topInventory) return
         if (event.click in setOf(ClickType.NUMBER_KEY, ClickType.SWAP_OFFHAND, ClickType.DROP, ClickType.CONTROL_DROP, ClickType.DOUBLE_CLICK, ClickType.CREATIVE)) return
         val player = event.whoClicked as? Player ?: return
+        if (event.clickedInventory != event.view.topInventory) {
+            if (holder.type in setOf(GuiType.EDITOR, GuiType.ADMIN_CATEGORY) && player.hasPermission("omnicraft.admin") && event.click in setOf(ClickType.LEFT, ClickType.RIGHT)) {
+                event.isCancelled = false
+            }
+            return
+        }
 
         when (holder.type) {
             GuiType.MAIN -> {
@@ -96,8 +101,15 @@ class GuiListener(
                     menus.toggleDeleteMode(player, holder.categoryId)
                     return
                 }
+                if (event.slot in MenuService.ADMIN_CREATE_SLOTS) {
+                    val cursor = event.cursor
+                    if (cursor.type != Material.AIR) menus.createRecipeFromCursor(player, holder.categoryId ?: return, cursor)
+                    else menus.openItemModeBrowser(player, holder.categoryId ?: return, null, MenuService.ACTION_NEW_RECIPE)
+                    return
+                }
                 val category = plugin.configService.category(holder.categoryId ?: return) ?: return
-                val recipe = category.recipes.getOrNull(categorySlotIndex(event.slot)) ?: return
+                val recipeIndex = MenuService.ADMIN_RECIPE_SLOTS.indexOf(event.slot)
+                val recipe = category.recipes.getOrNull(recipeIndex) ?: return
                 if (menus.isDeleteMode(player)) menus.deleteRecipe(player, recipe) else menus.openEditor(player, recipe)
             }
             GuiType.EDITOR -> {
@@ -113,9 +125,18 @@ class GuiListener(
 
                 when (event.slot) {
                     in MenuService.INGREDIENT_SLOTS -> {
-                        if (event.click == ClickType.RIGHT) menus.adjustIngredient(player, recipe, event.slot, -1)
-                        else menus.adjustIngredient(player, recipe, event.slot, 1)
+                        val ingredientIndex = MenuService.INGREDIENT_SLOTS.indexOf(event.slot)
+                        if (ingredientIndex >= recipe.ingredients.size) {
+                            menus.openItemModeBrowser(player, recipe.categoryId, recipe.id, MenuService.ACTION_SET_INGREDIENT, event.slot)
+                        } else if (event.click == ClickType.SHIFT_RIGHT) {
+                            menus.removeIngredient(player, recipe, event.slot)
+                        } else if (event.click == ClickType.RIGHT) {
+                            menus.adjustIngredient(player, recipe, event.slot, -1)
+                        } else {
+                            menus.adjustIngredient(player, recipe, event.slot, 1)
+                        }
                     }
+                    MenuService.OUTPUT_SLOT -> menus.openItemModeBrowser(player, recipe.categoryId, recipe.id, MenuService.ACTION_SET_OUTPUT)
                     45 -> menus.toggleRecipeEnabled(player, recipe)
                     46 -> menus.cycleEnchantExtraction(player, recipe)
                     47 -> menus.toggleRecipeCraftTime(player, recipe)
@@ -126,13 +147,59 @@ class GuiListener(
                     }
                 }
             }
+            GuiType.ITEM_MODE -> {
+                when (event.slot) {
+                    11 -> menus.openVanillaBrowser(player, holder.categoryId ?: return, holder.recipeId, holder.action ?: return, holder.editorSlot, 0)
+                    15 -> menus.openMmoTypeBrowser(player, holder.categoryId ?: return, holder.recipeId, holder.action ?: return, holder.editorSlot, 0)
+                    22 -> backFromBrowser(player, holder)
+                }
+            }
+            GuiType.VANILLA_BROWSER -> {
+                when (event.slot) {
+                    45 -> menus.openVanillaBrowser(player, holder.categoryId ?: return, holder.recipeId, holder.action ?: return, holder.editorSlot, (holder.page - 1).coerceAtLeast(0))
+                    49 -> menus.openItemModeBrowser(player, holder.categoryId ?: return, holder.recipeId, holder.action ?: return, holder.editorSlot)
+                    53 -> menus.openVanillaBrowser(player, holder.categoryId ?: return, holder.recipeId, holder.action ?: return, holder.editorSlot, holder.page + 1)
+                    else -> menus.selectVanilla(player, holder, event.slot)
+                }
+            }
+            GuiType.MMO_TYPE_BROWSER -> {
+                when (event.slot) {
+                    45 -> menus.openMmoTypeBrowser(player, holder.categoryId ?: return, holder.recipeId, holder.action ?: return, holder.editorSlot, (holder.page - 1).coerceAtLeast(0))
+                    49 -> menus.openItemModeBrowser(player, holder.categoryId ?: return, holder.recipeId, holder.action ?: return, holder.editorSlot)
+                    53 -> menus.openMmoTypeBrowser(player, holder.categoryId ?: return, holder.recipeId, holder.action ?: return, holder.editorSlot, holder.page + 1)
+                    else -> menus.selectMmoType(player, holder, event.slot)
+                }
+            }
+            GuiType.MMO_ITEM_BROWSER -> {
+                when (event.slot) {
+                    45 -> menus.openMmoItemBrowser(player, holder.categoryId ?: return, holder.recipeId, holder.action ?: return, holder.editorSlot, holder.itemType ?: return, (holder.page - 1).coerceAtLeast(0))
+                    49 -> menus.openMmoTypeBrowser(player, holder.categoryId ?: return, holder.recipeId, holder.action ?: return, holder.editorSlot, 0)
+                    53 -> menus.openMmoItemBrowser(player, holder.categoryId ?: return, holder.recipeId, holder.action ?: return, holder.editorSlot, holder.itemType ?: return, holder.page + 1)
+                    else -> menus.selectMmoItem(player, holder, event.slot)
+                }
+            }
         }
     }
 
     @EventHandler
     fun onDrag(event: InventoryDragEvent) {
-        if (event.view.topInventory.holder is OmniHolder) {
-            event.isCancelled = true
+        val holder = event.view.topInventory.holder as? OmniHolder ?: return
+        event.isCancelled = true
+        val player = event.whoClicked as? Player ?: return
+        val topSlots = event.rawSlots.filter { it < event.view.topInventory.size }
+        val slot = topSlots.firstOrNull() ?: return
+        val stack = event.oldCursor
+        if (stack.type == Material.AIR) return
+        when (holder.type) {
+            GuiType.ADMIN_CATEGORY -> if (slot in MenuService.ADMIN_CREATE_SLOTS) menus.createRecipeFromCursor(player, holder.categoryId ?: return, stack)
+            GuiType.EDITOR -> {
+                val recipe = plugin.configService.recipe(holder.categoryId ?: return, holder.recipeId ?: return) ?: return
+                when (slot) {
+                    MenuService.OUTPUT_SLOT -> menus.saveOutputFromCursor(player, recipe, stack)
+                    in MenuService.INGREDIENT_SLOTS -> menus.saveIngredientFromCursor(player, recipe, slot, stack)
+                }
+            }
+            else -> {}
         }
     }
 
@@ -166,5 +233,12 @@ class GuiListener(
     private fun toggleSetting(path: String, player: Player) {
         plugin.configService.setConfig(path, !plugin.config.getBoolean(path))
         menus.openSettings(player)
+    }
+
+    private fun backFromBrowser(player: Player, holder: OmniHolder) {
+        val categoryId = holder.categoryId ?: return
+        val recipeId = holder.recipeId
+        if (recipeId == null) menus.openAdminCategory(player, categoryId)
+        else plugin.configService.recipe(categoryId, recipeId)?.let { menus.openEditor(player, it) } ?: menus.openAdminCategory(player, categoryId)
     }
 }

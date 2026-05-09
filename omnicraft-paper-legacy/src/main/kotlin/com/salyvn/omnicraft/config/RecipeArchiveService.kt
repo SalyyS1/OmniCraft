@@ -27,12 +27,13 @@ class RecipeArchiveService(private val plugin: JavaPlugin) {
     fun importCategory(categoryId: String, archive: File) {
         val target = File(plugin.dataFolder, "category/$categoryId")
         target.mkdirs()
+        val targetPath = target.canonicalFile.toPath()
         ZipInputStream(FileInputStream(archive)).use { zip ->
             var entry = zip.nextEntry
             while (entry != null) {
                 if (!entry.isDirectory && entry.name.endsWith(".yml")) {
                     val output = File(target, entry.name).canonicalFile
-                    if (!output.path.startsWith(target.canonicalPath)) error("Unsafe zip entry: ${entry.name}")
+                    if (!output.toPath().startsWith(targetPath)) error("Unsafe zip entry: ${entry.name}")
                     output.parentFile.mkdirs()
                     FileOutputStream(output).use { zip.copyTo(it) }
                 }

@@ -7,7 +7,11 @@ class OmniHolder(
     val type: GuiType,
     val categoryId: String? = null,
     val recipeId: String? = null,
-    val searchQuery: String? = null
+    val searchQuery: String? = null,
+    val action: String? = null,
+    val editorSlot: Int = -1,
+    val page: Int = 0,
+    val itemType: String? = null
 ) : InventoryHolder {
     private var inventory: Inventory? = null
     override fun getInventory(): Inventory = inventory ?: error("Inventory is not attached")
@@ -23,5 +27,9 @@ enum class GuiType {
     SETTINGS,
     BROWSE,
     ADMIN_CATEGORY,
-    EDITOR
+    EDITOR,
+    ITEM_MODE,
+    VANILLA_BROWSER,
+    MMO_TYPE_BROWSER,
+    MMO_ITEM_BROWSER
 }
