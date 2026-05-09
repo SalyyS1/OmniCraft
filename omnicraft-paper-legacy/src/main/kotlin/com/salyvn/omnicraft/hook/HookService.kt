@@ -34,7 +34,10 @@ class HookService(private val plugin: JavaPlugin) {
             val pluginInstance = mmoPlugin() ?: return@runCatching emptyList()
             val types = pluginInstance.javaClass.getMethod("getTypes").invoke(pluginInstance)
             val names = types.javaClass.getMethod("getAllTypeNames").invoke(types) as? Iterable<*>
-            names?.mapNotNull { it?.toString() }?.sorted() ?: emptyList()
+            names?.mapNotNull { it?.toString() }
+                ?.filter { mmoItemIds(it).isNotEmpty() }
+                ?.sorted()
+                ?: emptyList()
         }.getOrDefault(emptyList())
     }
 

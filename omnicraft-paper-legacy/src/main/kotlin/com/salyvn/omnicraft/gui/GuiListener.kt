@@ -101,13 +101,14 @@ class GuiListener(
                     menus.toggleDeleteMode(player, holder.categoryId)
                     return
                 }
-                if (event.slot in MenuService.ADMIN_CREATE_SLOTS) {
+                val category = plugin.configService.category(holder.categoryId ?: return) ?: return
+                val createSlot = MenuService.ADMIN_RECIPE_SLOTS.getOrNull(category.recipes.size)
+                if (event.slot == createSlot) {
                     val cursor = event.cursor
-                    if (cursor.type != Material.AIR) menus.createRecipeFromCursor(player, holder.categoryId ?: return, cursor)
-                    else menus.openItemModeBrowser(player, holder.categoryId ?: return, null, MenuService.ACTION_NEW_RECIPE)
+                    if (cursor.type != Material.AIR) menus.createRecipeFromCursor(player, category.id, cursor)
+                    else menus.openItemModeBrowser(player, category.id, null, MenuService.ACTION_NEW_RECIPE)
                     return
                 }
-                val category = plugin.configService.category(holder.categoryId ?: return) ?: return
                 val recipeIndex = MenuService.ADMIN_RECIPE_SLOTS.indexOf(event.slot)
                 val recipe = category.recipes.getOrNull(recipeIndex) ?: return
                 if (menus.isDeleteMode(player)) menus.deleteRecipe(player, recipe) else menus.openEditor(player, recipe)
@@ -130,6 +131,8 @@ class GuiListener(
                             menus.openItemModeBrowser(player, recipe.categoryId, recipe.id, MenuService.ACTION_SET_INGREDIENT, event.slot)
                         } else if (event.click == ClickType.SHIFT_RIGHT) {
                             menus.removeIngredient(player, recipe, event.slot)
+                        } else if (event.click == ClickType.SHIFT_LEFT) {
+                            menus.adjustIngredient(player, recipe, event.slot, 16)
                         } else if (event.click == ClickType.RIGHT) {
                             menus.adjustIngredient(player, recipe, event.slot, -1)
                         } else {
@@ -191,7 +194,10 @@ class GuiListener(
         val stack = event.oldCursor
         if (stack.type == Material.AIR) return
         when (holder.type) {
-            GuiType.ADMIN_CATEGORY -> if (slot in MenuService.ADMIN_CREATE_SLOTS) menus.createRecipeFromCursor(player, holder.categoryId ?: return, stack)
+            GuiType.ADMIN_CATEGORY -> {
+                val category = plugin.configService.category(holder.categoryId ?: return) ?: return
+                if (slot == MenuService.ADMIN_RECIPE_SLOTS.getOrNull(category.recipes.size)) menus.createRecipeFromCursor(player, category.id, stack)
+            }
             GuiType.EDITOR -> {
                 val recipe = plugin.configService.recipe(holder.categoryId ?: return, holder.recipeId ?: return) ?: return
                 when (slot) {

@@ -98,7 +98,7 @@ class ConfigService(private val plugin: OmniCraftPlugin) {
             for (recipe in category.recipes) {
                 if (!recipeIds.add(recipe.id.lowercase())) issues += "Duplicate recipe '${category.id}:${recipe.id}'"
                 if (recipe.ingredients.isEmpty()) issues += "Recipe '${category.id}:${recipe.id}' has no ingredients"
-                if (recipe.ingredients.size > 25) issues += "Recipe '${category.id}:${recipe.id}' has more than 25 ingredients"
+                if (recipe.ingredients.size > 16) issues += "Recipe '${category.id}:${recipe.id}' has more than 16 ingredients"
                 if (recipe.output.amount <= 0) issues += "Recipe '${category.id}:${recipe.id}' output amount must be positive"
                 if (recipe.extraction.successRate !in 0.0..1.0) issues += "Recipe '${category.id}:${recipe.id}' extraction success rate must be 0..1"
                 if (recipe.output.advancedEnchantments.any { it.id.isBlank() }) issues += "Recipe '${category.id}:${recipe.id}' has blank AdvancedEnchantments id"

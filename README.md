@@ -49,11 +49,11 @@ Put the correct OmniCraft jar in `plugins/`, start the server once, then edit:
 ## Admin Editing Flow
 
 - `/oc browse` opens categories.
-- In a category, each recipe has a green create slot beside it. Click it to choose an output from the built-in browser, or hold an item on your cursor and click/drag it into the green slot.
+- In a category, recipes are shown continuously. The next empty slot is green. Click it to choose an output from the built-in browser, or hold an item on your cursor and click/drag it into the green slot.
 - New recipes are saved disabled by default. Add ingredients, review settings, then enable the recipe.
-- In the editor, empty ingredient slots are green add slots. Click one to browse Vanilla/MMOItems items, or place an item from your cursor.
+- In the editor, ingredients use a 4x4 grid. Empty ingredient slots are green add slots. Click one to browse Vanilla/MMOItems items, or place an item from your cursor.
 - Click the output preview to replace the output through the same browser.
-- Left click an ingredient to increase the amount, right click to decrease it, shift-right click to remove it.
+- Left click an ingredient to increase the amount, right click to decrease it, shift-left adds 16, shift-right removes it.
 
 ## Build Outputs
 

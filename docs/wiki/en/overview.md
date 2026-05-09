@@ -73,14 +73,15 @@ Each recipe file controls one output item.
 
 Use `/oc browse`, choose a category, then click a recipe to edit it. The editor uses the same 5x5 ingredient grid as the player craft station.
 
-- Green slots beside recipes create a new recipe. Click to browse an output item, or hold an item on your cursor and click/drag it into the green slot.
+- Recipes are shown continuously. The next empty slot is green and creates a new recipe. Click to browse an output item, or hold an item on your cursor and click/drag it into the green slot.
 - New recipes are saved disabled by default so unfinished recipes cannot be crafted.
 - Put an item on your cursor and click an ingredient slot to serialize it as an ingredient.
 - Put an item on your cursor and click the output slot to serialize it as the output.
-- Click an empty green ingredient slot to browse Vanilla or MMOItems items.
+- Ingredient editing uses a 4x4 grid. Click an empty green ingredient slot to browse Vanilla or MMOItems items.
 - Click the output preview to replace the output through the item browser.
 - Left click an ingredient to increase the required amount.
 - Right click an ingredient to reduce the required amount.
+- Shift-left click an ingredient to add 16.
 - Shift-right click an ingredient to remove it.
 - Toggle recipe enabled state, craft time, and AdvancedEnchantments extraction mode from the bottom row.
 - Toggle Delete Mode in browse/category view, then click a recipe to delete its YAML file.

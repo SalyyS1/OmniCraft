@@ -36,18 +36,16 @@ class MenuService(
 
     companion object {
         val INGREDIENT_SLOTS = listOf(
-            1, 2, 3, 4, 5,
-            10, 11, 12, 13, 14,
-            19, 20, 21, 22, 23,
-            28, 29, 30, 31, 32,
-            37, 38, 39, 40, 41
+            10, 11, 12, 13,
+            19, 20, 21, 22,
+            28, 29, 30, 31,
+            37, 38, 39, 40
         )
-        const val OUTPUT_SLOT = 34
+        const val OUTPUT_SLOT = 25
         const val ACTION_NEW_RECIPE = "new_recipe"
         const val ACTION_SET_OUTPUT = "set_output"
         const val ACTION_SET_INGREDIENT = "set_ingredient"
-        val ADMIN_RECIPE_SLOTS = listOf(10, 12, 14, 16, 19, 21, 23, 25, 28, 30, 32, 34, 37, 39, 41, 43)
-        val ADMIN_CREATE_SLOTS = ADMIN_RECIPE_SLOTS.map { it + 1 }
+        val ADMIN_RECIPE_SLOTS = listOf(10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, 43)
         val BROWSER_ITEM_SLOTS = (10..16) + (19..25) + (28..34) + (37..43)
     }
 
@@ -157,10 +155,9 @@ class MenuService(
         fill(inv)
         category.recipes.take(ADMIN_RECIPE_SLOTS.size).forEachIndexed { index, recipe ->
             inv.setItem(ADMIN_RECIPE_SLOTS[index], recipeIcon(player, recipe))
-            inv.setItem(ADMIN_CREATE_SLOTS[index], createRecipeIcon())
         }
-        if (category.recipes.size < ADMIN_CREATE_SLOTS.size) {
-            inv.setItem(ADMIN_CREATE_SLOTS[category.recipes.size.coerceAtLeast(0)], createRecipeIcon())
+        if (category.recipes.size < ADMIN_RECIPE_SLOTS.size) {
+            inv.setItem(ADMIN_RECIPE_SLOTS[category.recipes.size], createRecipeIcon())
         }
         inv.setItem(49, named(Material.ARROW, "#d6f7ffBack", listOf("#8ea3b0Return to browser.")))
         inv.setItem(53, named(Material.BARRIER, "#ff6961Delete Mode: ${if (deleteMode.contains(player.uniqueId)) "ON" else "OFF"}", listOf("#8ea3b0When ON, click a recipe to delete it.")))
@@ -172,7 +169,7 @@ class MenuService(
         val inv = Bukkit.createInventory(holder, 54, Text.c("#7cf5ffEdit ${recipe.displayName}"))
         holder.attach(inv)
         fill(inv)
-        recipe.ingredients.take(25).forEachIndexed { index, ingredient ->
+        recipe.ingredients.take(INGREDIENT_SLOTS.size).forEachIndexed { index, ingredient ->
             val item = ItemAdapter.fromCraftItem(ingredient.item)
             item.amount = ingredient.requiredAmount.coerceAtLeast(1)
             inv.setItem(INGREDIENT_SLOTS[index], item)
@@ -184,6 +181,13 @@ class MenuService(
             )))
         }
         inv.setItem(OUTPUT_SLOT, ItemAdapter.fromCraftItem(recipe.output))
+        inv.setItem(24, named(Material.PAPER, "#ffd166Amount Controls", listOf(
+            "#d6f7ffLeft click: +1",
+            "#d6f7ffRight click: -1",
+            "#d6f7ffShift left: +16",
+            "#d6f7ffShift right: remove",
+            "#8ea3b0Cursor item: replace/add"
+        )))
         inv.setItem(45, named(if (recipe.options.enabled) Material.LIME_DYE else Material.GRAY_DYE, "#7cf5ffEnabled: ${recipe.options.enabled}", listOf("#d6f7ffClick to toggle.")))
         inv.setItem(46, named(Material.ENCHANTED_BOOK, "#7cf5ffAE Extract: ${recipe.extraction.enchant}", listOf("#d6f7ffClick to cycle KEEP/DESTROY/EXTRACT.")))
         inv.setItem(47, named(Material.CLOCK, "#7cf5ffCraft Time: ${recipe.craftTime.enabled}", listOf("#d6f7ffClick to toggle recipe countdown.")))

@@ -73,14 +73,15 @@ Mỗi file recipe là một thành phẩm.
 
 Dùng `/oc browse`, chọn category, rồi click recipe để edit. Editor dùng cùng lưới ingredient 5x5 như GUI craft của member.
 
-- Ô xanh cạnh recipe dùng để tạo recipe mới. Click để browse output, hoặc cầm item trên cursor rồi click/drag vào ô xanh.
+- Recipe hiển thị liên tục. Ô trống kế tiếp màu xanh dùng để tạo recipe mới. Click để browse output, hoặc cầm item trên cursor rồi click/drag vào ô xanh.
 - Recipe mới được lưu ở trạng thái disabled để tránh craft nhầm khi chưa cấu hình xong.
 - Cầm item trên cursor rồi click ô ingredient để serialize item đó làm nguyên liệu.
 - Cầm item trên cursor rồi click ô output để serialize item đó làm thành phẩm.
-- Click ô ingredient xanh còn trống để browse item Vanilla hoặc MMOItems.
+- Ingredient dùng lưới 4x4. Click ô ingredient xanh còn trống để browse item Vanilla hoặc MMOItems.
 - Click output preview để đổi output bằng item browser.
 - Chuột trái vào ingredient để tăng số lượng yêu cầu.
 - Chuột phải vào ingredient để giảm số lượng yêu cầu.
+- Shift + chuột trái vào ingredient để tăng 16.
 - Shift + chuột phải vào ingredient để xóa ingredient.
 - Toggle enabled, craft time và AdvancedEnchantments extraction ở hàng dưới.
 - Bật Delete Mode trong browse/category, rồi click recipe để xóa file YAML của recipe đó.
