@@ -1,4 +1,3 @@
-# Main GUI layout and category access.
 main-menu:
   title: "#7cf5ffOmniCraft"
   size: 54
@@ -11,14 +10,12 @@ main-menu:
       conditions: []
       entry-cost: 0.0
 
-# Default click amounts and spam cooldown.
 craft:
   left-amount: 1
   right-amount: 16
   shift-hard-cap: 512
   cooldown-ms: 350
 
-# Optional countdown before crafting.
 craft-time:
   enabled: false
   seconds: 5
@@ -27,7 +24,6 @@ craft-time:
   reopen-menu: true
   title-each-second: true
 
-# Server-side transaction safety.
 anti-dupe:
   block-creative: true
   audit: true
@@ -40,14 +36,12 @@ anti-dupe:
   cancel-offhand-swap: true
   cancel-drop-key: true
 
-# Default behavior when base items contain extra power.
 extraction-defaults:
   enchant: DESTROY
   gemstone: DESTROY
   level: DESTROY
   success-rate: 1.0
 
-# AdvancedEnchantments integration.
 advanced-enchantments:
   enabled: true
   apply-output-enchants: true
@@ -55,12 +49,9 @@ advanced-enchantments:
   warn-when-consumed: true
   missing-hook-disables-ae-recipes: false
   extraction:
-    # Chance to successfully split AE enchants from consumed base items.
     extract-rate: 100.0
-    # Returned AE book rates when extraction succeeds.
     fixed-success-rate: 50.0
     fixed-destroy-rate: 0.0
-    # Override rates for specific enchant ids.
     per-enchant:
       telepathy:
         extract-rate: 100.0
@@ -71,21 +62,18 @@ advanced-enchantments:
       RARE: 55.0
       LEGENDARY: 35.0
 
-# Craft history and rare item logs.
 history:
   enabled: true
   log-rare-recipes: true
   webhook-url: ""
   file: "logs/craft-history.log"
 
-# Admin editor behavior.
 editor:
   consume-editor-drop: false
   backup-before-save: true
   confirm-delete: true
   atomic-save: true
 
-# Player convenience features.
 features:
   favorites: true
   last-category: true

@@ -1,14 +1,24 @@
 # OmniCraft
 
-OmniCraft is a Paper crafting station plugin for RPG/MMO servers. It gives players a clean category menu, shows exact material requirements, supports MMOItems and AdvancedEnchantments, and processes every craft with server-side anti-dupe checks.
+OmniCraft is a Paper crafting station plugin for RPG/MMO servers by SalyVn. It provides MMOItems-style recipe menus, server-side anti-dupe transactions, MMOItems support, AdvancedEnchantments extraction, Vault money checks, PlaceholderAPI conditions, admin recipe editing, and a bilingual wiki.
 
-## Server Use
+## Download
 
-Put the correct OmniCraft jar in `plugins/`, start the server once, then edit:
+Built jars are committed in `dist/`.
 
-- `plugins/OmniCraft/config.yml`
-- `plugins/OmniCraft/messages.yml`
-- `plugins/OmniCraft/category/<category>/<recipe>.yml`
+| Jar | Server | Runtime |
+| --- | --- | --- |
+| `dist/OmniCraft-legacy.jar` | Paper 1.20 to 1.21.11 | Java 21 |
+| `dist/OmniCraft-26.jar` | Paper 26.1.x | Java 25 |
+
+## Install
+
+1. Put the correct jar in your server `plugins/` folder.
+2. Start the server once.
+3. Edit `plugins/OmniCraft/config.yml`, `plugins/OmniCraft/messages.yml`, and recipe files under `plugins/OmniCraft/category/`.
+4. Run `/oc reload` or restart.
+
+Optional hooks: MMOItems, MythicLib, AdvancedEnchantments, Vault, PlaceholderAPI, OmniGemStone, OmniEnchants, OmniTooltips, OmniMinMax, OmniDelta, OmniSet, OmniLore, OmniModifier, OmniPopupPickup, OmniTotalStats.
 
 ## Commands
 
@@ -16,80 +26,56 @@ Put the correct OmniCraft jar in `plugins/`, start the server once, then edit:
 | --- | --- | --- |
 | `/omnicraft`, `/oc`, `/ocraft`, `/craft` | `omnicraft.use` | Open main crafting menu |
 | `/oc open <category>` | `omnicraft.category.<id>` or `omnicraft.open.<id>` | Open a category directly |
-| `/oc settings` | `omnicraft.settings` | Open settings menu |
-| `/oc browse` | `omnicraft.admin` | Browse admin recipe menu |
-| `/oc search <category> <text>` | `omnicraft.use` | Search recipes by output, ingredient, MMOItems type or id |
-| `/oc reload` | `omnicraft.reload` | Reload config, messages, recipes |
+| `/oc browse` | `omnicraft.admin` | Browse, create, edit, and delete recipes |
+| `/oc settings` | `omnicraft.settings` | Open global settings menu |
+| `/oc search <category> <text>` | `omnicraft.use` | Search recipes |
+| `/oc reload` | `omnicraft.reload` | Reload plugin files |
+| `/oc validate` | `omnicraft.validate` | Validate recipes and hooks |
 | `/oc debug recipe <id>` | `omnicraft.debug` | Dry-run a recipe check |
-| `/oc validate` | `omnicraft.validate` | Validate loaded recipes |
-| `/oc export <category>` | `omnicraft.admin` | Export a category zip |
-| `/oc import <category> <file.zip>` | `omnicraft.admin` | Import a category zip from `exports/` |
+| `/oc export <category>` | `omnicraft.admin` | Export category zip |
+| `/oc import <category> <file.zip>` | `omnicraft.admin` | Import category zip |
 
 ## Main Features
 
-- Category-based craft GUI.
-- Direct category open commands.
-- 5x5 ingredient grid.
-- Requirement lines preserve original item name/lore and disable italic text.
-- Material preview supports stack amounts above 64 inside GUI.
-- Craft by left/right/shift clicking the output item.
-- Optional title countdown before craft.
-- MMOItems output and item matching.
-- AdvancedEnchantments output enchant application.
-- AdvancedEnchantments keep/destroy/extract behavior for consumed upgrade ingredients.
-- Vault money requirement.
-- PlaceholderAPI conditions.
+- Category craft GUI with direct open commands.
+- 4x4 ingredient grid and product-click crafting.
+- Left click, right click, and shift click craft amounts.
+- Original item name/lore preservation with non-italic display.
+- Requirement lines with hex colors and stack previews above 64.
+- Craftable-only filter, favorites, search, missing material summary, and source hints.
+- Admin browse menu with continuous green create slots beside existing recipes.
+- Editor with cursor item placement, Vanilla/MMOItems browser, ingredient amount controls, output replacement, enable toggle, craft-time toggle, and extraction mode toggle.
+- Optional title countdown before final craft validation.
+- MMOItems output and ingredient matching.
+- AdvancedEnchantments output application and KEEP, DESTROY, EXTRACT handling for consumed upgrade items.
+- Vault money requirements and PlaceholderAPI conditions.
 - Daily and weekly craft limits.
-- Rare craft broadcast.
-- Craft history log.
-- Config validation and category import/export.
-- Admin settings, browse, recipe creation, item browser, recipe editor, cursor item serialization, and delete mode.
-- Server-side anti-dupe transaction flow with rollback.
+- Rare craft broadcasts, craft history logs, category import/export, and config validation.
+- Server-side transaction locks, click throttling, rollback, and GUI action hardening.
 
-## Admin Editing Flow
+## Project Layout
 
-- `/oc browse` opens categories.
-- In a category, recipes are shown continuously. The next empty slot is green. Click it to choose an output from the built-in browser, or hold an item on your cursor and click/drag it into the green slot.
-- New recipes are saved disabled by default. Add ingredients, review settings, then enable the recipe.
-- In the editor, ingredients use a 4x4 grid. Empty ingredient slots are green add slots. Click one to browse Vanilla/MMOItems items, or place an item from your cursor.
-- Click the output preview to replace the output through the same browser.
-- Left click an ingredient to increase the amount, right click to decrease it, shift-left adds 16, shift-right removes it.
+| Path | Purpose |
+| --- | --- |
+| `omnicraft-core` | Shared recipe models, matching, locks, and calculators |
+| `omnicraft-paper-legacy` | Paper 1.20 to 1.21.11 plugin module |
+| `omnicraft-paper-26` | Paper 26.1.x plugin module |
+| `docs` | GitHub Pages wiki |
+| `dist` | Committed release jars |
 
-## Build Outputs
-
-- `OmniCraft-Legacy.jar`: Paper `1.20` to `1.21.11`, Java 21 runtime.
-- `OmniCraft-26.jar`: Paper `26.1.x`, Java 25 runtime, Paper API `26.1.2.build.+`.
-
-## Recipe API Shape
-
-```yaml
-output:
-  mode: MMOITEMS
-  material: DIAMOND_SWORD
-  amount: 1
-  type: SWORD
-  id: STEEL_BLADE
-  enchantments:
-    advanced:
-      telepathy:
-        level: 1
-        success-rate: 100.0
-        destroy-rate: 0.0
-        tier: COMMON
-```
-
-## Public Core Classes
+## Public API Surface
 
 - `CraftRecipe`
 - `CraftItem`
 - `CraftIngredient`
+- `CraftRequirements`
+- `CraftBehavior`
+- `CraftTime`
+- `ExtractionPolicy`
 - `CraftCalculator`
 - `CraftMatcher`
 - `CraftLocks`
 
 ## Wiki
 
-- Web wiki: `docs/wiki/index.html`
-- English markdown: `docs/wiki/en/overview.md`
-- Vietnamese markdown: `docs/wiki/vi/overview.md`
-- Research notes: `docs/research.md`
+Open `docs/index.html` locally or use the GitHub Pages site once Pages is enabled for the repository.

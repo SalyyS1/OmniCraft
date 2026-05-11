@@ -1,50 +1,75 @@
-# GUI titles and labels.
 gui:
   main-title: "#7cf5ffOmniCraft"
   category-title: "#7cf5ff{category}"
   recipe-title: "#7cf5ff{recipe}"
   settings-title: "#7cf5ffOmniCraft Settings"
   browse-title: "#7cf5ffRecipe Browser"
+  editor-title: "#7cf5ffEdit {recipe}"
+  item-source-title: "#7cf5ffSelect Item Source"
+  vanilla-browser-title: "#7cf5ffVanilla Items"
+  mmo-type-browser-title: "#7cf5ffMMOItems Types"
+  mmo-item-browser-title: "#7cf5ff{type} Items"
   back: "#d6f7ffBack"
+  previous: "#d6f7ffPrevious"
+  next: "#d6f7ffNext"
   search: "#7cf5ffSearch"
   favorites: "#ffd166Favorites"
   craftable-only: "#7cf5ffCraftable Only"
   missing-materials: "#7cf5ffMissing Materials"
-  risk-warning: "#ffd166Risk Warning"
+  risk-warning: "#ffd166⚠ Risk Warning"
+  craft-controls: "#7cf5ffCraft From Output"
+  amount-controls: "#ffd166Amount Controls"
+  create-recipe: "#71f79f+ Create Recipe"
+  add-ingredient: "#71f79fAdd Ingredient"
   delete-mode-off: "#ff6961Delete Mode: OFF"
-  requirement-line: "{color}{current}/{required}"
+  delete-mode-on: "#ff6961Delete Mode: ON"
+  requirement-line: "{color}• Required: {current}/{required}"
 
-# Requirement status lines.
+lore:
+  open-category: "#d6f7ff› Click to open."
+  permission: "#8ea3b0• Permission: {permission}"
+  craftable: "#71f79f✓ Craftable"
+  not-craftable: "#ff6961✕ Missing requirements"
+  recipe-left-open: "#d6f7ff› Left click: open"
+  recipe-right-favorite: "#ffd166★ Right click: favorite"
+  output-left-craft: "#d6f7ff› Left click: craft x{amount}"
+  output-right-craft: "#d6f7ff› Right click: craft x{amount}"
+  output-shift-craft: "#d6f7ff› Shift click: craft max"
+  all-materials-ready: "#71f79f✓ All materials ready."
+  missing-material: "#ff6961✕ {id}: missing {amount}"
+  source-hint: "#8ea3b0› {hint}"
+  create-recipe-click: "#d6f7ff› Click to browse an output item."
+  create-recipe-cursor: "#8ea3b0› Or hold an item and click this slot."
+  add-ingredient-click: "#d6f7ff› Click to browse items."
+  add-ingredient-cursor: "#8ea3b0› Or hold an item on cursor and click."
+
 requirements:
-  material-ok: "#71f79fOK Materials"
-  material-missing: "#ff6961X Materials"
-  craftable: "#71f79fOK Craftable"
-  not-craftable: "#ff6961X Missing requirements"
+  material-ok: "#71f79f✓ Materials ready"
+  material-missing: "#ff6961✕ Missing materials"
+  craftable: "#71f79f✓ Craftable"
+  not-craftable: "#ff6961✕ Missing requirements"
   permission: "#ff6961You don't have permission to craft {item_name}"
   level: "#ff6961Need {amount} more levels"
   money: "#ff6961Need {amount} money"
   condition: "#ff6961Condition failed: {condition}"
-  available-crafts: "#8ea3b0Available crafts: {amount}"
+  available-crafts: "#8ea3b0• Available crafts: {amount}"
 
-# Risk and extraction messages.
 risk:
-  enchant: "#d6f7ffEnchant: {mode}"
-  gemstone: "#d6f7ffGemstone: {mode}"
-  level: "#d6f7ffLevel: {mode}"
-  priority: "#8ea3b0Items with fewer risks are consumed first."
-  advanced-enchantments: "#ffd166AdvancedEnchantments detected: {amount}"
-  extraction-rate: "#d6f7ffExtraction success: {rate}%"
+  enchant: "#d6f7ff• Enchant: {mode}"
+  gemstone: "#d6f7ff• Gemstone: {mode}"
+  level: "#d6f7ff• Level: {mode}"
+  priority: "#8ea3b0› Items with fewer risks are consumed first."
+  advanced-enchantments: "#ffd166• AdvancedEnchantments detected: {amount}"
+  extraction-rate: "#d6f7ff• Extraction success: {rate}%"
   advanced-extracted: "#71f79fExtracted {success} AdvancedEnchantments. Failed {failed}."
   advanced-destroyed: "#ff6961AdvancedEnchantments on consumed materials were destroyed."
   advanced-kept: "#71f79fAdvancedEnchantments were kept on crafted output."
 
-# Craft countdown title.
 titles:
   crafting: "#7cf5ffCrafting"
   countdown: "#d6f7ffFinishing in {seconds}s"
   cancelled: "#ff6961Craft cancelled"
 
-# Error messages.
 errors:
   no-permission: "#ff6961No permission."
   no-category-permission: "#ff6961You cannot open this category."
@@ -60,7 +85,6 @@ errors:
   missing-hook: "#ff6961Required hook is missing: {hook}"
   unsafe-zip: "#ff6961Unsafe archive entry blocked."
 
-# Success messages.
 success:
   crafted: "#71f79fCrafted {amount}x {item}."
   reload: "#71f79fOmniCraft reloaded."
@@ -68,14 +92,14 @@ success:
   favorite-updated: "#ffd166Favorite updated: {item}"
   exported: "#71f79fExported {category} to {file}."
   imported: "#71f79fImported {category} from {file}."
+  recipe-created: "#71f79fCreated recipe {id}. Add ingredients, then enable it."
 
-# Server broadcasts.
 broadcast:
   rare-craft: "#ffd166{player} crafted {amount}x {item}."
 
-# Admin command usage.
 usage:
   open: "#ff6961Usage: /oc open <category>"
+  search: "#ff6961Usage: /oc search <category> <text>"
   export: "#ff6961Usage: /oc export <category>"
   import: "#ff6961Usage: /oc import <category> <file.zip>"
   debug: "#ff6961Usage: /oc debug recipe <id>"

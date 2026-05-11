@@ -97,14 +97,14 @@ class MenuService(
         fill(inv)
 
         val check = craftService.check(player, recipe)
-        recipe.ingredients.take(25).forEachIndexed { index, ingredient ->
+        recipe.ingredients.take(INGREDIENT_SLOTS.size).forEachIndexed { index, ingredient ->
             val item = ItemAdapter.fromCraftItem(ingredient.item)
             item.amount = ingredient.requiredAmount.coerceAtLeast(1)
             item.editMeta {
                 val lore = it.lore()?.toMutableList() ?: mutableListOf()
                 val have = ingredient.requiredAmount - (check.missing[ingredient.id] ?: 0)
                 val color = if (have >= ingredient.requiredAmount) "#71f79f" else "#ff6961"
-                lore += Text.c("$color$have/${ingredient.requiredAmount}")
+                lore += Text.c("$color• Required: $have/${ingredient.requiredAmount}")
                 it.lore(lore)
             }
             inv.setItem(INGREDIENT_SLOTS[index], item)
@@ -112,13 +112,13 @@ class MenuService(
 
         inv.setItem(OUTPUT_SLOT, productIcon(player, recipe))
         inv.setItem(43, warningIcon(recipe))
-        inv.setItem(45, named(Material.PAPER, "#7cf5ffCraft Controls", listOf(
-            "#d6f7ffClick the output item.",
-            "#d6f7ffLeft: craft x${recipe.craft.leftAmount}",
-            "#d6f7ffRight: craft x${recipe.craft.rightAmount}",
-            "#d6f7ffShift: craft max"
+        inv.setItem(45, named(Material.CRAFTING_TABLE, "#7cf5ffCraft From Output", listOf(
+            "#d6f7ff› Click the product preview.",
+            "#d6f7ff• Left: craft x${recipe.craft.leftAmount}",
+            "#d6f7ff• Right: craft x${recipe.craft.rightAmount}",
+            "#d6f7ff• Shift: craft max"
         )))
-        inv.setItem(48, named(Material.BOOK, "#7cf5ffMissing Materials", missingLore(check.missing, recipe)))
+        inv.setItem(48, named(Material.HOPPER, "#7cf5ffMissing Materials", missingLore(check.missing, recipe)))
         inv.setItem(49, named(Material.ARROW, "#d6f7ffBack", listOf("#8ea3b0Return to category.")))
         player.openInventory(inv)
     }
@@ -184,12 +184,12 @@ class MenuService(
             )))
         }
         inv.setItem(OUTPUT_SLOT, ItemAdapter.fromCraftItem(recipe.output))
-        inv.setItem(24, named(Material.PAPER, "#ffd166Amount Controls", listOf(
-            "#d6f7ffLeft click: +1",
-            "#d6f7ffRight click: -1",
-            "#d6f7ffShift left: +16",
-            "#d6f7ffShift right: remove",
-            "#8ea3b0Cursor item: replace/add"
+        inv.setItem(24, named(Material.COMPARATOR, "#ffd166Amount Controls", listOf(
+            "#d6f7ff• Left click: +1",
+            "#d6f7ff• Right click: -1",
+            "#d6f7ff• Shift left: +16",
+            "#d6f7ff• Shift right: remove",
+            "#8ea3b0› Cursor item: replace/add"
         )))
         inv.setItem(45, named(if (recipe.options.enabled) Material.LIME_DYE else Material.GRAY_DYE, "#7cf5ffEnabled: ${recipe.options.enabled}", listOf("#d6f7ffClick to toggle.")))
         inv.setItem(46, named(Material.ENCHANTED_BOOK, "#7cf5ffAE Extract: ${recipe.extraction.enchant}", listOf("#d6f7ffClick to cycle KEEP/DESTROY/EXTRACT.")))
@@ -381,7 +381,7 @@ class MenuService(
             inv.setItem(22, named(Material.BARRIER, "#ff6961No items in $type", listOf("#8ea3b0Create items in MMOItems first.")))
         } else {
             pageItems(ids, page).forEachIndexed { index, id ->
-                val preview = hooks.mmoItem(type, id, 1) ?: named(Material.PAPER, "#d6f7ff$id", listOf("#8ea3b0Click to select."))
+                val preview = hooks.mmoItem(type, id, 1) ?: named(Material.BOOK, "#d6f7ff$id", listOf("#8ea3b0Click to select."))
                 inv.setItem(BROWSER_ITEM_SLOTS[index], preview)
             }
         }
@@ -465,9 +465,9 @@ class MenuService(
         val check = craftService.check(player, recipe)
         item.editMeta {
             val lore = it.lore()?.toMutableList() ?: mutableListOf()
-            lore += Text.c(if (check.allowed) "#71f79fOK Craftable" else "#ff6961X Missing requirements")
-            lore += Text.c("#d6f7ffLeft click to open.")
-            lore += Text.c("#d6f7ffRight click to favorite.")
+            lore += Text.c(if (check.allowed) "#71f79f✓ Craftable" else "#ff6961✕ Missing requirements")
+            lore += Text.c("#d6f7ff› Left click: open")
+            lore += Text.c("#ffd166★ Right click: favorite")
             it.lore(lore)
         }
         return item
@@ -478,33 +478,33 @@ class MenuService(
         val check = craftService.check(player, recipe)
         item.editMeta {
             val lore = it.lore()?.toMutableList() ?: mutableListOf()
-            lore += Text.c(if (check.missing.isEmpty()) "#71f79fOK Materials" else "#ff6961X Materials")
-            if (check.permissionDenied) lore += Text.c("#ff6961You don't have permission to craft ${recipe.displayName}")
-            if (check.levelMissing > 0) lore += Text.c("#ff6961Need ${check.levelMissing} more levels")
-            if (check.moneyMissing > 0.0) lore += Text.c("#ff6961Need ${check.moneyMissing} money")
-            lore += Text.c("#8ea3b0Available crafts: ${check.craftableAmount}")
-            lore += Text.c("#d6f7ffLeft click: craft x${recipe.craft.leftAmount}")
-            lore += Text.c("#d6f7ffRight click: craft x${recipe.craft.rightAmount}")
-            lore += Text.c("#d6f7ffShift click: craft max")
+            lore += Text.c(if (check.missing.isEmpty()) "#71f79f✓ Materials ready" else "#ff6961✕ Missing materials")
+            if (check.permissionDenied) lore += Text.c("#ff6961• Permission: denied")
+            if (check.levelMissing > 0) lore += Text.c("#ff6961• Level: need ${check.levelMissing} more")
+            if (check.moneyMissing > 0.0) lore += Text.c("#ff6961• Money: need ${check.moneyMissing}")
+            lore += Text.c("#8ea3b0• Available crafts: ${check.craftableAmount}")
+            lore += Text.c("#d6f7ff› Left click: craft x${recipe.craft.leftAmount}")
+            lore += Text.c("#d6f7ff› Right click: craft x${recipe.craft.rightAmount}")
+            lore += Text.c("#d6f7ff› Shift click: craft max")
             it.lore(lore)
         }
         return item
     }
 
     private fun warningIcon(recipe: CraftRecipe): ItemStack {
-        return named(Material.PAPER, "#ffd166Risk Warning", listOf(
-            "#d6f7ffEnchant: ${recipe.extraction.enchant}",
-            "#d6f7ffGemstone: ${recipe.extraction.gemstone}",
-            "#d6f7ffLevel: ${recipe.extraction.level}",
-            "#8ea3b0Items with fewer risks are consumed first."
+        return named(Material.BELL, "#ffd166⚠ Risk Warning", listOf(
+            "#d6f7ff• Enchant: ${recipe.extraction.enchant}",
+            "#d6f7ff• Gemstone: ${recipe.extraction.gemstone}",
+            "#d6f7ff• Level: ${recipe.extraction.level}",
+            "#8ea3b0› Items with fewer risks are consumed first."
         ))
     }
 
     private fun missingLore(missing: Map<String, Int>, recipe: CraftRecipe): List<String> {
-        if (missing.isEmpty()) return listOf("#71f79fAll materials ready.")
+        if (missing.isEmpty()) return listOf("#71f79f✓ All materials ready.")
         return missing.flatMap {
-            val lines = mutableListOf("#ff6961${it.key}: missing ${it.value}")
-            recipe.options.sourceHints[it.key]?.takeIf { hint -> hint.isNotBlank() }?.let { hint -> lines += "#8ea3b0$hint" }
+            val lines = mutableListOf("#ff6961✕ ${it.key}: missing ${it.value}")
+            recipe.options.sourceHints[it.key]?.takeIf { hint -> hint.isNotBlank() }?.let { hint -> lines += "#8ea3b0› $hint" }
             lines
         }
     }
@@ -539,9 +539,9 @@ class MenuService(
     private fun state(path: String): String = if (config.pluginConfigBoolean(path)) "ON" else "OFF"
 
     private fun createRecipeIcon(): ItemStack {
-        return named(Material.LIME_STAINED_GLASS_PANE, "#71f79fCreate Recipe", listOf(
-            "#d6f7ffClick to browse an output item.",
-            "#8ea3b0Or hold an item and click this slot."
+        return named(Material.LIME_STAINED_GLASS_PANE, "#71f79f+ Create Recipe", listOf(
+            "#d6f7ff› Click to browse an output item.",
+            "#8ea3b0› Or hold an item and click this slot."
         ))
     }
 

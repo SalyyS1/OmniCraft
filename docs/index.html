@@ -1,0 +1,259 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OmniCraft Wiki</title>
+  <link rel="stylesheet" href="assets/wiki.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#overview">OmniCraft</a>
+    <div class="tools">
+      <input id="search" type="search" placeholder="Search wiki">
+      <button id="langToggle" type="button">VI</button>
+      <button id="themeToggle" type="button">Dark</button>
+    </div>
+  </header>
+
+  <div class="shell">
+    <aside class="sidebar">
+      <nav>
+        <a href="#overview">Overview</a>
+        <a href="#install">Installation</a>
+        <a href="#commands">Commands</a>
+        <a href="#player">Player Guide</a>
+        <a href="#admin">Admin GUI</a>
+        <a href="#config">Config</a>
+        <a href="#recipes">Recipes</a>
+        <a href="#integrations">Integrations</a>
+        <a href="#safety">Anti-dupe</a>
+        <a href="#examples">Examples</a>
+        <a href="#troubleshooting">Troubleshooting</a>
+        <a href="#faq">FAQ</a>
+        <a href="#changelog">Changelog</a>
+      </nav>
+    </aside>
+
+    <main>
+      <section id="overview" class="hero canvas searchable">
+        <span class="badge">Paper plugin</span>
+        <h1 data-en="OmniCraft Wiki" data-vi="Wiki OmniCraft">OmniCraft Wiki</h1>
+        <p data-en="OmniCraft is a crafting station plugin for RPG/MMO Paper servers. It focuses on MMOItems-style crafting, clear requirements, AdvancedEnchantments extraction, and strict server-side transaction safety." data-vi="OmniCraft l� plugin tr?m ch? t?o cho server Paper RPG/MMO. Plugin t?p trung v�o giao di?n gi?ng MMOItems, y�u c?u r� r�ng, t�ch AdvancedEnchantments v� x? l� craft an to�n ph�a server.">OmniCraft is a crafting station plugin for RPG/MMO Paper servers. It focuses on MMOItems-style crafting, clear requirements, AdvancedEnchantments extraction, and strict server-side transaction safety.</p>
+        <div class="grid three">
+          <article><strong>1.20 - 1.21.11</strong><span>Use `OmniCraft-legacy.jar` on Java 21.</span></article>
+          <article><strong>26.1.x</strong><span>Use `OmniCraft-26.jar` on Java 25.</span></article>
+          <article><strong>Author</strong><span>SalyVn</span></article>
+        </div>
+      </section>
+
+      <section id="install" class="canvas searchable">
+        <h2 data-en="Installation" data-vi="C�i d?t">Installation</h2>
+        <ol data-en-list="Download the jar that matches your server version.|Put the jar into the server plugins folder.|Start the server once to generate files.|Edit config.yml, messages.yml, and category recipe files.|Run /oc reload or restart the server.">
+          <li>Download the jar that matches your server version.</li>
+          <li>Put the jar into the server plugins folder.</li>
+          <li>Start the server once to generate files.</li>
+          <li>Edit config.yml, messages.yml, and category recipe files.</li>
+          <li>Run /oc reload or restart the server.</li>
+        </ol>
+        <div class="callout info" data-en="Install MMOItems, MythicLib, AdvancedEnchantments, Vault, and PlaceholderAPI only when your recipes need those hooks. OmniCraft will still load without optional hooks." data-vi="Ch? c?n c�i MMOItems, MythicLib, AdvancedEnchantments, Vault v� PlaceholderAPI khi recipe c?a b?n d�ng c�c hook d�. OmniCraft v?n load khi thi?u hook t�y ch?n.">Install MMOItems, MythicLib, AdvancedEnchantments, Vault, and PlaceholderAPI only when your recipes need those hooks. OmniCraft will still load without optional hooks.</div>
+      </section>
+
+      <section id="commands" class="canvas searchable">
+        <h2 data-en="Commands And Permissions" data-vi="L?nh v� quy?n">Commands And Permissions</h2>
+        <table>
+          <thead><tr><th>Command</th><th>Permission</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>/omnicraft</code>, <code>/oc</code>, <code>/ocraft</code>, <code>/craft</code></td><td><code>omnicraft.use</code></td><td data-en="Open main menu." data-vi="M? menu ch�nh.">Open main menu.</td></tr>
+            <tr><td><code>/oc open &lt;category&gt;</code></td><td><code>omnicraft.category.&lt;id&gt;</code> or <code>omnicraft.open.&lt;id&gt;</code></td><td data-en="Open one category directly." data-vi="M? nhanh m?t category.">Open one category directly.</td></tr>
+            <tr><td><code>/oc browse</code></td><td><code>omnicraft.admin</code></td><td data-en="Open recipe browser and editor." data-vi="M? tr�nh duy?t v� ch?nh recipe.">Open recipe browser and editor.</td></tr>
+            <tr><td><code>/oc settings</code></td><td><code>omnicraft.settings</code></td><td data-en="Edit global settings in game." data-vi="Ch?nh setting chung trong game.">Edit global settings in game.</td></tr>
+            <tr><td><code>/oc reload</code></td><td><code>omnicraft.reload</code></td><td data-en="Reload plugin files." data-vi="Reload file plugin.">Reload plugin files.</td></tr>
+            <tr><td><code>/oc validate</code></td><td><code>omnicraft.validate</code></td><td data-en="Check recipes and hooks." data-vi="Ki?m tra recipe v� hook.">Check recipes and hooks.</td></tr>
+            <tr><td><code>/oc debug recipe &lt;id&gt;</code></td><td><code>omnicraft.debug</code></td><td data-en="Dry-run one recipe without crafting." data-vi="Test recipe m� kh�ng craft th?t.">Dry-run one recipe without crafting.</td></tr>
+            <tr><td><code>/oc export &lt;category&gt;</code></td><td><code>omnicraft.admin</code></td><td data-en="Export category zip." data-vi="Xu?t category th�nh zip.">Export category zip.</td></tr>
+            <tr><td><code>/oc import &lt;category&gt; &lt;file.zip&gt;</code></td><td><code>omnicraft.admin</code></td><td data-en="Import category zip from exports." data-vi="Nh?p category zip t? thu m?c exports.">Import category zip from exports.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="player" class="canvas searchable">
+        <h2 data-en="Player Crafting Guide" data-vi="Hu?ng d?n ngu?i choi">Player Crafting Guide</h2>
+        <div class="grid two">
+          <article><h3>Menus</h3><p data-en="Players open the main menu, choose a category, then click a recipe. Category filters include craftable-only, favorites, and search." data-vi="Ngu?i choi m? menu ch�nh, ch?n category r?i ch?n recipe. Category c� l?c craftable-only, favorites v� search.">Players open the main menu, choose a category, then click a recipe. Category filters include craftable-only, favorites, and search.</p></article>
+          <article><h3>Craft Clicks</h3><p data-en="Craft by clicking the product preview: left for the normal amount, right for batch amount, shift for max amount from inventory." data-vi="Craft b?ng c�ch click v�o item th�nh ph?m: chu?t tr�i craft s? m?c d?nh, chu?t ph?i craft theo batch, shift craft t?i da theo nguy�n li?u.">Craft by clicking the product preview: left for the normal amount, right for batch amount, shift for max amount from inventory.</p></article>
+        </div>
+        <div class="callout success" data-en="Ingredient previews keep the original name and lore. OmniCraft only adds one requirement line and disables italic display." data-vi="Preview nguy�n li?u gi? nguy�n t�n v� lore g?c. OmniCraft ch? th�m m?t d�ng y�u c?u v� t?t ch? nghi�ng.">Ingredient previews keep the original name and lore. OmniCraft only adds one requirement line and disables italic display.</div>
+      </section>
+
+      <section id="admin" class="canvas searchable">
+        <h2 data-en="Admin GUI Guide" data-vi="Hu?ng d?n GUI admin">Admin GUI Guide</h2>
+        <div class="steps">
+          <p data-en="Use /oc browse to open categories. Recipes are shown from left to right. The next empty slot is a green create button. Click it to browse Vanilla or MMOItems outputs, or place an item from your cursor." data-vi="D�ng /oc browse d? m? category. Recipe hi?n t? tr�i sang ph?i. � tr?ng k? ti?p l� n�t xanh d? t?o recipe. Click d? ch?n output Vanilla/MMOItems ho?c d?t item t? cursor.">Use /oc browse to open categories. Recipes are shown from left to right. The next empty slot is a green create button. Click it to browse Vanilla or MMOItems outputs, or place an item from your cursor.</p>
+          <p data-en="In the editor, the ingredient grid is 4x4. Empty green slots add ingredients. Left click an ingredient to add 1, right click to remove 1, shift-left to add 16, shift-right to remove the ingredient." data-vi="Trong editor, nguy�n li?u l� grid 4x4. � xanh tr?ng d�ng d? th�m nguy�n li?u. Chu?t tr�i +1, chu?t ph?i -1, shift tr�i +16, shift ph?i xo� nguy�n li?u.">In the editor, the ingredient grid is 4x4. Empty green slots add ingredients. Left click an ingredient to add 1, right click to remove 1, shift-left to add 16, shift-right to remove the ingredient.</p>
+          <p data-en="Click the output preview to replace the product. Toggle enabled, craft time, and AdvancedEnchantments extraction from the bottom row." data-vi="Click item th�nh ph?m d? d?i output. H�ng du?i d�ng d? b?t/t?t recipe, craft time v� ch? d? t�ch AdvancedEnchantments.">Click the output preview to replace the product. Toggle enabled, craft time, and AdvancedEnchantments extraction from the bottom row.</p>
+        </div>
+      </section>
+
+      <section id="config" class="canvas searchable">
+        <h2 data-en="Config Guide" data-vi="Hu?ng d?n config">Config Guide</h2>
+        <p data-en="OmniCraft uses three main file groups: config.yml for global behavior, messages.yml for all visible text, and category/&lt;id&gt;/&lt;recipe&gt;.yml for recipes." data-vi="OmniCraft d�ng ba nh�m file ch�nh: config.yml cho h�nh vi chung, messages.yml cho to�n b? text hi?n th?, v� category/&lt;id&gt;/&lt;recipe&gt;.yml cho recipe.">OmniCraft uses three main file groups: config.yml for global behavior, messages.yml for all visible text, and category/&lt;id&gt;/&lt;recipe&gt;.yml for recipes.</p>
+        <pre><code>plugins/OmniCraft/
+  config.yml
+  messages.yml
+  category/
+    weapons/
+      steel_sword.yml
+  data/
+    favorites.yml
+  logs/
+    craft-history.log</code></pre>
+        <div class="grid two">
+          <article><strong>Hex color</strong><span>Use strings like <code>#7cf5ffText</code>. Item display is non-italic by default.</span></article>
+          <article><strong>messange.yml</strong><span>Legacy typo fallback is supported if the file already exists.</span></article>
+        </div>
+      </section>
+
+      <section id="recipes" class="canvas searchable">
+        <h2 data-en="Recipe YAML Guide" data-vi="Hu?ng d?n YAML recipe">Recipe YAML Guide</h2>
+        <table>
+          <thead><tr><th>Field</th><th>Use</th></tr></thead>
+          <tbody>
+            <tr><td><code>output</code></td><td>Crafted item. Supports <code>VANILLA</code> and <code>MMOITEMS</code>.</td></tr>
+            <tr><td><code>ingredients</code></td><td>Required materials. Matching prefers UID/custom data, then MMOItems type/id, then material.</td></tr>
+            <tr><td><code>requirements</code></td><td>Permission, level, money, and PlaceholderAPI conditions.</td></tr>
+            <tr><td><code>craft</code></td><td>Click amounts, hard cap, and cooldown.</td></tr>
+            <tr><td><code>craft-time</code></td><td>Optional title countdown before final validation.</td></tr>
+            <tr><td><code>extraction</code></td><td>AdvancedEnchantments keep, destroy, or extract behavior.</td></tr>
+            <tr><td><code>limits</code></td><td>Daily and weekly per-player limits.</td></tr>
+            <tr><td><code>options</code></td><td>Enabled state, hidden state, rare broadcast, and source hints.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="integrations" class="canvas searchable">
+        <h2 data-en="Integrations" data-vi="T�ch h?p">Integrations</h2>
+        <div class="grid two">
+          <article><h3>MMOItems</h3><p data-en="Outputs and ingredients can use MMOItems type/id. If an MMOItems output cannot be resolved, the recipe fails instead of crafting a vanilla fallback." data-vi="Output v� nguy�n li?u c� th? d�ng MMOItems type/id. N?u output MMOItems kh�ng resolve du?c, recipe fail thay v� craft nh?m item vanilla.">Outputs and ingredients can use MMOItems type/id. If an MMOItems output cannot be resolved, the recipe fails instead of crafting a vanilla fallback.</p></article>
+          <article><h3>AdvancedEnchantments</h3><p data-en="OmniCraft can apply AE enchants to outputs and handle AE enchants on consumed upgrade ingredients with KEEP, DESTROY, or EXTRACT." data-vi="OmniCraft c� th? �p enchant AE v�o output v� x? l� enchant AE tr�n nguy�n li?u n�ng c?p b?ng KEEP, DESTROY ho?c EXTRACT.">OmniCraft can apply AE enchants to outputs and handle AE enchants on consumed upgrade ingredients with KEEP, DESTROY, or EXTRACT.</p></article>
+          <article><h3>Vault</h3><p data-en="Money requirements are checked and charged through Vault when installed." data-vi="Y�u c?u ti?n du?c check v� tr? qua Vault khi c� c�i Vault.">Money requirements are checked and charged through Vault when installed.</p></article>
+          <article><h3>PlaceholderAPI</h3><p data-en="Conditions can compare placeholder output to required text." data-vi="Condition c� th? so s�nh output c?a placeholder v?i text y�u c?u.">Conditions can compare placeholder output to required text.</p></article>
+        </div>
+      </section>
+
+      <section id="safety" class="canvas searchable">
+        <h2 data-en="Anti-dupe And Safety" data-vi="Ch?ng dupe v� an to�n">Anti-dupe And Safety</h2>
+        <ul data-en-list="All GUI clicks are cancelled before OmniCraft handles registered slots.|Crafting scans the real server-side player inventory, never preview items or cursor items.|Each player and recipe is locked during processing.|Countdown crafts re-check requirements after the timer ends.|Bulk craft uses an immutable snapshot and a hard cap.|Rollback is attempted when output delivery fails.|Drag, number key, offhand swap, drop key, double-click collect, and creative clone actions are blocked in player GUIs.">
+          <li>All GUI clicks are cancelled before OmniCraft handles registered slots.</li>
+          <li>Crafting scans the real server-side player inventory, never preview items or cursor items.</li>
+          <li>Each player and recipe is locked during processing.</li>
+          <li>Countdown crafts re-check requirements after the timer ends.</li>
+          <li>Bulk craft uses an immutable snapshot and a hard cap.</li>
+          <li>Rollback is attempted when output delivery fails.</li>
+          <li>Drag, number key, offhand swap, drop key, double-click collect, and creative clone actions are blocked in player GUIs.</li>
+        </ul>
+      </section>
+
+      <section id="examples" class="canvas searchable">
+        <h2 data-en="Config Examples" data-vi="V� d? config">Config Examples</h2>
+        <h3>Main menu</h3>
+        <pre><code>main-menu:
+  title: "#7cf5ffOmniCraft"
+  size: 54
+  categories:
+    - id: weapons
+      title: "Weapons"
+      icon: DIAMOND_SWORD
+      slot: 10
+      permission: "omnicraft.category.weapons"
+      conditions: []
+      entry-cost: 0.0</code></pre>
+        <h3>Vanilla recipe</h3>
+        <pre><code>id: steel_sword
+display:
+  name: "#7cf5ffSteel Sword"
+output:
+  mode: VANILLA
+  material: IRON_SWORD
+  amount: 1
+  uid: steel_sword
+  name: "#7cf5ffSteel Sword"
+ingredients:
+  iron:
+    amount: 24
+    item:
+      mode: VANILLA
+      material: IRON_INGOT
+      amount: 1
+requirements:
+  permission: "omnicraft.recipe.steel_sword"
+  level: 5
+  money: 250.0
+  conditions:
+    - placeholder: "%player_world%"
+      equals: "world"</code></pre>
+        <h3>MMOItems recipe</h3>
+        <pre><code>output:
+  mode: MMOITEMS
+  type: SWORD
+  id: STEEL_BLADE
+  amount: 1
+ingredients:
+  blade_core:
+    amount: 1
+    item:
+      mode: MMOITEMS
+      type: MATERIAL
+      id: BLADE_CORE
+      amount: 1</code></pre>
+        <h3>Craft time countdown</h3>
+        <pre><code>craft-time:
+  enabled: true
+  seconds: 5
+  cancel-on-move: false
+  cancel-on-logout: true</code></pre>
+        <h3>AdvancedEnchantments extraction</h3>
+        <pre><code>extraction:
+  enchant: EXTRACT
+  gemstone: DESTROY
+  level: DESTROY
+  success-rate: 1.0
+
+advanced-enchantments:
+  extraction:
+    extract-rate: 100.0
+    fixed-success-rate: 50.0
+    fixed-destroy-rate: 0.0
+    tier-rates:
+      COMMON: 70.0
+      RARE: 55.0
+      LEGENDARY: 35.0</code></pre>
+      </section>
+
+      <section id="troubleshooting" class="canvas searchable">
+        <h2 data-en="Troubleshooting" data-vi="X? l� l?i">Troubleshooting</h2>
+        <div class="grid two">
+          <article><strong>Recipe does not craft</strong><span>Run <code>/oc validate</code>, check permission, level, money, hooks, and missing materials.</span></article>
+          <article><strong>MMOItems item missing</strong><span>Confirm type/id spelling, reload MMOItems, then run <code>/oc reload</code>.</span></article>
+          <article><strong>AE enchants disappear</strong><span>Set <code>extraction.enchant</code> to <code>KEEP</code> or <code>EXTRACT</code> for upgrade recipes.</span></article>
+          <article><strong>Players spam craft</strong><span>Increase <code>craft.cooldown-ms</code>, lower hard caps, and keep anti-dupe actions enabled.</span></article>
+        </div>
+      </section>
+
+      <section id="faq" class="canvas searchable">
+        <h2>FAQ</h2>
+        <details open><summary>Can members use /oc open?</summary><p data-en="Yes. They still need the category permission or omnicraft.open.&lt;category&gt;." data-vi="C�. Ngu?i choi v?n c?n quy?n category ho?c omnicraft.open.&lt;category&gt;.">Yes. They still need the category permission or omnicraft.open.&lt;category&gt;.</p></details>
+        <details><summary>Can stack previews show more than 64?</summary><p data-en="Yes. Requirement previews keep the required amount visible even when the amount is above the normal stack cap." data-vi="C�. Preview y�u c?u v?n hi?n th? s? lu?ng c?n k? c? khi vu?t gi?i h?n stack b�nh thu?ng.">Yes. Requirement previews keep the required amount visible even when the amount is above the normal stack cap.</p></details>
+        <details><summary>Can I edit all text?</summary><p data-en="Most GUI labels, lore lines, warnings, titles, errors, and success messages are in messages.yml." data-vi="H?u h?t label GUI, lore, c?nh b�o, title, l?i v� th�ng b�o th�nh c�ng d?u n?m trong messages.yml.">Most GUI labels, lore lines, warnings, titles, errors, and success messages are in messages.yml.</p></details>
+      </section>
+
+      <section id="changelog" class="canvas searchable">
+        <h2>Changelog</h2>
+        <p><strong>v1</strong> <span data-en="Craft GUI, admin editor, MMOItems, AdvancedEnchantments extraction, anti-dupe transaction safety, import/export, validation, and bilingual wiki." data-vi="Craft GUI, editor admin, MMOItems, t�ch AdvancedEnchantments, ch?ng dupe transaction, import/export, validate v� wiki song ng?.">Craft GUI, admin editor, MMOItems, AdvancedEnchantments extraction, anti-dupe transaction safety, import/export, validation, and bilingual wiki.</span></p>
+      </section>
+    </main>
+  </div>
+
+  <script src="assets/wiki.js"></script>
+</body>
+</html>
