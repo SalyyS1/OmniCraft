@@ -1,19 +1,4 @@
 :root {
-  color-scheme: light;
-  --bg: #f6f8fb;
-  --panel: #ffffff;
-  --panel-soft: #eef6f8;
-  --text: #1d2733;
-  --muted: #667789;
-  --line: #d9e2ea;
-  --cyan: #1ea7b8;
-  --green: #25a765;
-  --red: #d94b4b;
-  --amber: #b98216;
-  --code: #13202b;
-}
-
-body.dark {
   color-scheme: dark;
   --bg: #111820;
   --panel: #17222c;

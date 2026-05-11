@@ -1,15 +1,15 @@
-﻿# Wiki OmniCraft
+# Wiki OmniCraft
 
-D�ng web wiki t?i `docs/index.html` ho?c GitHub Pages d? xem hu?ng d?n d?y d?.
+Dùng web wiki tại `docs/index.html` hoặc GitHub Pages để xem hướng dẫn đầy đủ.
 
-## Li�n k?t nhanh
+## Liên kết nhanh
 
-- C�i d?t
-- L?nh v� quy?n
-- Hu?ng d?n craft cho ngu?i choi
-- Hu?ng d?n GUI admin
-- Hu?ng d?n config
-- V� d? YAML recipe
-- T�ch h?p MMOItems v� AdvancedEnchantments
-- Ghi ch� ch?ng dupe v� an to�n
-- X? l� l?i v� FAQ
+- Cài đặt
+- Lệnh và quyền
+- Hướng dẫn craft cho người chơi
+- Hướng dẫn GUI admin
+- Hướng dẫn config
+- Ví dụ YAML recipe
+- Tích hợp MMOItems và AdvancedEnchantments
+- Ghi chú chống dupe và an toàn
+- Xử lý lỗi và FAQ
