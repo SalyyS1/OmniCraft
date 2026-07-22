@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="OmniCraft documentation for Paper RPG/MMO servers.">
+  <title>OmniCraft · Wiki</title>
+  <link rel="stylesheet" href="../assets/wiki.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#top">✦ OmniCraft</a>
+    <div class="tools"><input id="search" type="search" placeholder="Search documentation"><a class="button" href="../wiki/en/overview.md">Markdown</a><a class="button language-link" href="../" hreflang="vi" lang="vi">VI</a></div>
+  </header>
+  <div class="shell">
+    <aside class="sidebar"><nav>
+      <a href="#start">Start</a><a href="#players">Players</a><a href="#admins">Admins</a><a href="#recipe">Recipe</a><a href="#rpg">RPG</a><a href="#integrations">Integrations</a><a href="#safety">Safety</a><a href="#support">Support</a>
+    </nav></aside>
+    <main id="top">
+      <section class="hero canvas searchable">
+        <span class="badge">PAPER RPG CRAFTING</span>
+        <h1>Clear, quick, and safe RPG crafting.</h1>
+        <p>Vanilla and MMOItems recipes, batch crafting, craft time, limits, Vault, PlaceholderAPI, and server-side transactions designed to prevent dupes.</p>
+        <div class="grid three"><article><strong>Paper 1.20–1.21.11</strong><span>Legacy JAR · Java 21</span></article><article><strong>Paper 26.1+</strong><span>26 JAR · Java 25</span></article><article><strong>Soft dependencies</strong><span>MMOItems, Vault, PAPI, AE, AuraSkills</span></article></div>
+      </section>
+
+      <section id="start" class="canvas searchable"><h2>Start in five minutes</h2>
+        <ol><li>Install the JAR matching the server version and start the server once.</li><li>Open <code>plugins/OmniCraft/config.yml</code>, then create recipes in <code>category/&lt;id&gt;/</code>.</li><li>Run <code>/oc validate</code> to check recipes.</li><li>Run <code>/oc reload</code> after editing files.</li></ol>
+        <div class="callout info">MMOItems, Vault, PlaceholderAPI, and AdvancedEnchantments are optional. A missing hook never prevents OmniCraft from starting; recipes that need that hook are safely rejected.</div>
+      </section>
+
+      <section id="players" class="canvas searchable"><h2>Player guide</h2><div class="grid two">
+        <article><h3>Open and select a recipe</h3><p>Use <code>/oc</code>, then choose a category and recipe. The menu includes craftable-only filtering, favorites, and search.</p></article>
+        <article><h3>Craft controls</h3><p>Left click: standard amount. Right click: batch. Shift: the maximum allowed by inventory and the recipe hard cap.</p></article>
+        <article><h3>Timed crafts</h3><p>Fast Craft accepts permission or PlaceholderAPI modifiers. Requirements are checked again immediately before materials are consumed.</p></article>
+        <article><h3>Limits</h3><p>Recipes can have daily and weekly limits. Quota is reserved and released again if the transaction rolls back.</p></article>
+      </div></section>
+
+      <section id="admins" class="canvas searchable"><h2>Administration and commands</h2><table><thead><tr><th>Command</th><th>Permission</th><th>Purpose</th></tr></thead><tbody>
+        <tr><td><code>/oc</code></td><td><code>omnicraft.use</code></td><td>Open the menu.</td></tr>
+        <tr><td><code>/oc open &lt;category&gt;</code></td><td>category or open.&lt;id&gt;</td><td>Open a category directly.</td></tr>
+        <tr><td><code>/oc browse</code></td><td><code>omnicraft.admin</code></td><td>Create and edit recipes in the GUI.</td></tr>
+        <tr><td><code>/oc validate</code></td><td><code>omnicraft.validate</code></td><td>Validate configs and recipes.</td></tr>
+        <tr><td><code>/oc debug recipe &lt;id&gt;</code></td><td><code>omnicraft.debug</code></td><td>Dry run; consumes no materials.</td></tr>
+        <tr><td><code>/oc autocraft &lt;recipe&gt; [amount]</code></td><td><code>omnicraft.auto-craft</code></td><td>Start an online AutoCraft queue.</td></tr>
+        <tr><td><code>/oc autocraft-cancel</code></td><td><code>omnicraft.auto-craft</code></td><td>Cancel the current queue.</td></tr>
+        <tr><td><code>/oc autocraft-status</code></td><td><code>omnicraft.auto-craft</code></td><td>Inspect pending nodes and current state.</td></tr>
+        <tr><td><code>/oc autocraft-resume</code></td><td><code>omnicraft.auto-craft</code></td><td>Resume a queue safely paused before restart.</td></tr>
+        <tr><td><code>/oc reload</code></td><td><code>omnicraft.reload</code></td><td>Reload files.</td></tr>
+      </tbody></table></section>
+
+      <section id="recipe" class="canvas searchable"><h2>Recipe YAML</h2><pre data-copy-label="Copy" data-copy-success="Copied" data-copy-error="Copy failed"><code class="yaml"># Example recipe: enable AutoCraft only for intermediary recipes
+id: steel_sword
+display:
+  name: "#7cf5ffSteel Sword"
+output:
+  mode: VANILLA
+  material: IRON_SWORD
+  amount: 1
+ingredients:
+  iron:
+    amount: 24
+    item: { mode: VANILLA, material: IRON_INGOT, amount: 1 }
+requirements: { level: 5, money: 250.0 }
+craft-time:
+  enabled: true
+  seconds: 5
+  quantity-scaling: LINEAR
+  minimum-seconds: 1
+  maximum-seconds: 3600
+limits: { daily: -1, weekly: -1 }
+auto-craft: { enabled: false, priority: 0 }
+auraskills:
+  skill: FORGING
+  minimum-level: 10
+  experience: 12.5
+catalyst:
+  amount: 1
+  item: { mode: VANILLA, material: BLAZE_POWDER, amount: 1 }
+station: { material: SMITHING_TABLE, radius: 3 }
+outcome:
+  critical: { chance: 10.0, bonus-crafts: 1 }
+  byproduct:
+    chance: 25.0
+    item: { mode: VANILLA, material: IRON_NUGGET, amount: 2 }
+  quality:
+    name: Masterwork
+    chance: 5.0
+    lore: ["#ffd166A rare masterwork."]</code></pre>
+        <div class="callout">AutoCraft is enabled globally by default (and can be disabled with <code>features.auto-craft</code>). Set <code>auto-craft.enabled</code> only on intermediary recipes, then use <code>/oc autocraft &lt;recipe&gt; [amount]</code>. The queue runs only while online, prioritizes inventory materials, blocks cycles and excessive depth, and cancels on logout or reload. After a restart, only a waiting queue can be explicitly resumed using <code>/oc autocraft-resume</code>; a transaction already committing is never replayed.</div>
+      </section>
+
+      <section id="rpg" class="canvas searchable"><h2>Built-in RPG progression</h2><div class="grid two">
+        <article><h3>Station</h3><p>The required block is checked within <code>station.radius</code> around the player when crafting begins and before commit. Leaving during a countdown or AutoCraft safely fails the next node without consuming it.</p></article>
+        <article><h3>Catalyst</h3><p>A catalyst is consumed per craft. It uses the same allocation planner as ingredients, so one inventory stack cannot be counted twice.</p></article>
+        <article><h3>Critical</h3><p><code>bonus-crafts</code> adds output crafts when a critical roll succeeds. Chance is clamped to 0–100 and the result is seeded in the audit log.</p></article>
+        <article><h3>Byproduct</h3><p>A byproduct is a chance-based extra output per craft. OmniCraft reserves capacity for the largest possible result; a full inventory rolls back the transaction.</p></article>
+        <article><h3>Quality</h3><p>Quality adds tier-specific metadata and lore by chance. Each roll has an audit seed. Quality is incompatible with AdvancedEnchantments <code>KEEP</code> to protect preserved enchantment metadata.</p></article>
+      </div></section>
+
+      <section id="integrations" class="canvas searchable"><h2>Integrations</h2><div class="grid two">
+        <article><h3>MMOItems / MythicLib</h3><p>Use <code>mode: MMOITEMS</code> with <code>type</code> and <code>id</code>. An unresolved output fails safely instead of falling back to a Vanilla item.</p></article>
+        <article><h3>Vault / PlaceholderAPI</h3><p>Vault handles money; PlaceholderAPI provides conditions and speed multipliers. Abnormal speed values are clamped.</p></article>
+        <article><h3>AdvancedEnchantments</h3><p>KEEP, DESTROY, or EXTRACT modes are available for enchantments on upgrade ingredients.</p></article>
+        <article><h3>AuraSkills</h3><p>Soft-depend: a recipe may require a default skill level and award XP after a committed craft. Without AuraSkills, only recipes using the <code>auraskills</code> block are blocked; normal crafting remains available.</p></article>
+      </div></section>
+
+      <section id="safety" class="canvas searchable"><h2>Anti-dupe safety</h2><ul><li>Ingredient allocation never reuses an inventory slot.</li><li>Items, amounts, keys, and risks are revalidated immediately before mutation.</li><li>If output space is missing, the inventory snapshot is restored and money is refunded.</li><li>Each player has only one craft job; timing uses a monotonic clock.</li><li>Failed Vault refunds are stored durably and retried while the player is online.</li></ul></section>
+
+      <section id="support" class="canvas searchable"><h2>Troubleshooting</h2><div class="grid two">
+        <article><strong>Recipe will not craft</strong><span>Run <code>/oc validate</code>; check permission, level, money, hooks, and ingredients.</span></article>
+        <article><strong>MMOItems item is missing</strong><span>Check type/id, reload MMOItems, then run <code>/oc reload</code>.</span></article>
+        <article><strong>Inventory is full</strong><span>Free space; OmniCraft safely cancels the transaction instead of dropping or duping output.</span></article>
+        <article><strong>AE data is lost</strong><span>Choose <code>KEEP</code> or <code>EXTRACT</code> for an upgrade recipe.</span></article>
+      </div></section>
+    </main>
+  </div>
+  <script src="../assets/wiki.js"></script>
+</body>
+</html>

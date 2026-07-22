@@ -10,7 +10,7 @@
 <body>
   <header class="topbar">
     <a class="brand" href="#top">✦ OmniCraft</a>
-    <div class="tools"><input id="search" type="search" placeholder="Tìm trong tài liệu"><a class="button" href="wiki/vi/overview.md">Markdown</a></div>
+    <div class="tools"><input id="search" type="search" placeholder="Tìm trong tài liệu"><a class="button" href="wiki/vi/overview.md">Markdown</a><a class="button language-link" href="en/" hreflang="en" lang="en">EN</a></div>
   </header>
   <div class="shell">
     <aside class="sidebar"><nav>
@@ -49,7 +49,8 @@
         <tr><td><code>/oc reload</code></td><td><code>omnicraft.reload</code></td><td>Đọc lại file.</td></tr>
       </tbody></table></section>
 
-      <section id="recipe" class="canvas searchable"><h2>Recipe YAML</h2><pre><code>id: steel_sword
+      <section id="recipe" class="canvas searchable"><h2>Recipe YAML</h2><pre data-copy-label="Sao chép" data-copy-success="Đã sao chép" data-copy-error="Không thể sao chép"><code class="yaml"># Recipe mẫu: chỉ bật AutoCraft cho recipe trung gian
+id: steel_sword
 display:
   name: "#7cf5ffSteel Sword"
 output:

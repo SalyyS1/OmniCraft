@@ -163,6 +163,14 @@ pre {
   border: 1px solid var(--line);
 }
 pre code { background: transparent; border: 0; padding: 0; color: inherit; }
+.yaml .yaml-comment { color: #7f98a8; font-style: italic; }
+.yaml .yaml-key { color: #8be9fd; }
+.yaml .yaml-string { color: #f1fa8c; }
+.yaml .yaml-number { color: #bd93f9; }
+.yaml .yaml-boolean { color: #ff79c6; }
+.yaml .yaml-punctuation { color: #b8c8d3; }
+.yaml .yaml-value { color: #71f79f; }
+.language-link { min-width: 38px; justify-content: center; }
 .copy {
   position: absolute;
   right: 10px;
