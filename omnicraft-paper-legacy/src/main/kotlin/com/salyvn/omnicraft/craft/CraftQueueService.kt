@@ -103,7 +103,11 @@ class CraftQueueService(
             if (!craft.executeAutomated(player, recipe, 1) { committed ->
                     run.committing = false
                     if (!committed) {
-                        cancel(playerId, "stopped: requirements changed")
+                        if (!craft.isServerLoadSafe()) {
+                            run.nextDispatchNanos = System.nanoTime() + 1_000_000_000L
+                        } else {
+                            cancel(playerId, "stopped: requirements changed")
+                        }
                     } else if (--pending.remaining <= 0) {
                         run.steps.removeFirst()
                         run.nextDispatchNanos = System.nanoTime() + recipe.craft.cooldownMillis.coerceAtLeast(0) * 1_000_000L

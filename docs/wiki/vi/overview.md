@@ -27,7 +27,7 @@ OmniCraft là trạm chế tạo RPG/MMO cho Paper. Plugin kiểm tra nguyên li
 
 - **MMOItems 6.10.1-SNAPSHOT** và **MythicLib 1.7.1-SNAPSHOT** là soft-dependency: thiếu plugin thì OmniCraft vẫn khởi động; recipe cần MMOItems sẽ fail an toàn.
 - Vault dùng cho tiền, PlaceholderAPI dùng cho điều kiện và speed modifier, AdvancedEnchantments dùng cho KEEP/DESTROY/EXTRACT.
-- AuraSkills chưa được bật như một integration runtime trong bản này; không cấu hình XP AuraSkills cho đến khi adapter hoàn chỉnh được phát hành.
+- AuraSkills là soft-depend. Có thể dùng placeholder AuraSkills qua PlaceholderAPI cho Fast Craft; plugin chưa sở hữu XP hay profession API AuraSkills trực tiếp.
 
 ## An toàn chống dupe
 
