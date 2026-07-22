@@ -7,11 +7,7 @@ import java.io.File
 
 class RecipeWriter {
     fun saveAtomic(file: File, yaml: YamlConfiguration) {
-        file.parentFile.mkdirs()
-        val temp = File(file.parentFile, "${file.name}.tmp")
-        yaml.save(temp)
-        if (file.exists()) file.delete()
-        temp.renameTo(file)
+        AtomicYamlFile.save(file, yaml)
     }
 
     fun saveAtomic(file: File, recipe: CraftRecipe) {

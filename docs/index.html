@@ -21,7 +21,7 @@
         <span class="badge">PAPER RPG CRAFTING</span>
         <h1>Chế tạo RPG rõ ràng, nhanh và an toàn.</h1>
         <p>Recipe Vanilla và MMOItems, batch crafting, craft time, giới hạn, Vault, PlaceholderAPI và giao dịch phía server ưu tiên chống dupe.</p>
-        <div class="grid three"><article><strong>Paper 1.20–1.21.11</strong><span>JAR legacy · Java 21</span></article><article><strong>Paper 26.1+</strong><span>JAR 26 · Java 25</span></article><article><strong>Soft dependencies</strong><span>MMOItems, MythicLib, Vault, PAPI, AE</span></article></div>
+        <div class="grid three"><article><strong>Paper 1.20–1.21.11</strong><span>JAR legacy · Java 21</span></article><article><strong>Paper 26.1+</strong><span>JAR 26 · Java 25</span></article><article><strong>Soft dependencies</strong><span>MMOItems, Vault, PAPI, AE, AuraSkills</span></article></div>
       </section>
 
       <section id="start" class="canvas searchable"><h2>Bắt đầu trong 5 phút</h2>
@@ -68,7 +68,11 @@ craft-time:
   minimum-seconds: 1
   maximum-seconds: 3600
 limits: { daily: -1, weekly: -1 }
-auto-craft: { enabled: false, priority: 0 }</code></pre>
+auto-craft: { enabled: false, priority: 0 }
+auraskills:
+  skill: FORGING
+  minimum-level: 10
+  experience: 12.5</code></pre>
         <div class="callout">AutoCraft bật mặc định (có thể tắt bằng <code>features.auto-craft</code>): chỉ bật <code>auto-craft.enabled</code> cho recipe trung gian và dùng <code>/oc autocraft &lt;recipe&gt; [amount]</code>. Queue chạy khi online, ưu tiên inventory, chặn cycle/depth và hủy khi logout/reload. Sau restart, chỉ queue đang chờ mới được người chơi tự tiếp tục qua <code>/oc autocraft-resume</code>; craft đang commit không bao giờ bị phát lại.</div>
       </section>
 
@@ -76,7 +80,7 @@ auto-craft: { enabled: false, priority: 0 }</code></pre>
         <article><h3>MMOItems / MythicLib</h3><p>Dùng <code>mode: MMOITEMS</code> với <code>type</code> và <code>id</code>. Không resolve được output sẽ fail an toàn, không rơi về item Vanilla.</p></article>
         <article><h3>Vault / PlaceholderAPI</h3><p>Vault xử lý tiền; PlaceholderAPI dùng điều kiện và speed multiplier. Giá trị speed bất thường được clamp.</p></article>
         <article><h3>AdvancedEnchantments</h3><p>Chế độ KEEP, DESTROY hoặc EXTRACT cho enchant trên nguyên liệu nâng cấp.</p></article>
-        <article><h3>AuraSkills</h3><p>Chưa có adapter runtime public; không cần cài để OmniCraft hoạt động.</p></article>
+        <article><h3>AuraSkills</h3><p>Soft-depend: recipe có thể yêu cầu level một skill mặc định và thưởng XP sau craft đã commit. Thiếu AuraSkills chỉ chặn recipe dùng block <code>auraskills</code>, không ảnh hưởng craft cơ bản.</p></article>
       </div></section>
 
       <section id="safety" class="canvas searchable"><h2>An toàn chống dupe</h2><ul><li>Phân bổ ingredient không dùng trùng slot inventory.</li><li>Revalidate item, số lượng, key và risk ngay trước mutation.</li><li>Thiếu chỗ output sẽ hoàn inventory snapshot và refund tiền.</li><li>Mỗi người chơi chỉ có một craft job; thời gian dùng monotonic clock.</li><li>Refund Vault lỗi được lưu bền vững và thử lại khi người chơi online.</li></ul></section>
