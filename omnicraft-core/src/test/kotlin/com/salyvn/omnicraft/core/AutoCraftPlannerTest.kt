@@ -40,4 +40,19 @@ class AutoCraftPlannerTest {
 
         assertEquals(RecipeKey.of(high), result.steps.first().recipeKey)
     }
+
+    @Test fun `preserves repeated source ordering when a later use gains a new prerequisite`() {
+        val raw = CraftItem(ItemMode.VANILLA, "COBBLESTONE", 1)
+        val intermediate = CraftItem(ItemMode.VANILLA, "STONE", 1)
+        val target = CraftRecipe("target", "x", "Target", CraftItem(ItemMode.VANILLA, "DIAMOND", 1), listOf(
+            CraftIngredient("first", intermediate, 1), CraftIngredient("second", intermediate, 1)
+        ), CraftRequirements(), CraftBehavior(), CraftTime(), ExtractionPolicy(), CraftLimits())
+        val source = CraftRecipe("source", "x", "Source", intermediate, listOf(CraftIngredient("raw", raw, 1)), CraftRequirements(), CraftBehavior(), CraftTime(), ExtractionPolicy(), CraftLimits(), RecipeOptions(sourceHints = mapOf("auto-craft.enabled" to "true")))
+        val rawSource = CraftRecipe("raw-source", "x", "Raw source", raw, emptyList(), CraftRequirements(), CraftBehavior(), CraftTime(), ExtractionPolicy(), CraftLimits(), RecipeOptions(sourceHints = mapOf("auto-craft.enabled" to "true")))
+        val inventory = listOf(InventoryEntry(0, ItemKey(ItemMode.VANILLA, "COBBLESTONE"), 1))
+
+        val result = assertIs<AutoCraftPlanResult.Success>(AutoCraftPlanner().plan(target, 1, listOf(target, source, rawSource), inventory))
+
+        assertEquals(listOf(RecipeKey.of(source), RecipeKey.of(rawSource), RecipeKey.of(source), RecipeKey.of(target)), result.steps.map { it.recipeKey })
+    }
 }

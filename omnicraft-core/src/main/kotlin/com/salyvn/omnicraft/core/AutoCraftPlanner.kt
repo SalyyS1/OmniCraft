@@ -34,15 +34,15 @@ class AutoCraftPlanner(private val matcher: CraftMatcher = CraftMatcher()) {
         val enabled = recipes.filter { it.options.enabled && it.options.sourceHints["auto-craft.enabled"]?.equals("true", true) == true }
         val sources = enabled.groupBy { matcher.keyOf(it.output) }
         val stock = inventory.groupBy { it.key }.mapValuesTo(mutableMapOf()) { (_, entries) -> entries.sumOf { it.amount.coerceAtLeast(0) }.toLong() }
-        val steps = linkedMapOf<RecipeKey, Int>()
+        val steps = mutableListOf<AutoCraftStep>()
         val visiting = mutableSetOf<RecipeKey>()
 
         fun addStep(recipe: CraftRecipe, crafts: Int): String? {
             if (crafts !in 1..policy.maxCraftsPerNode) return "node-craft-limit"
             val key = RecipeKey.of(recipe)
-            val next = (steps[key] ?: 0).toLong() + crafts
-            if (next > policy.maxCraftsPerNode) return "node-craft-limit"
-            steps[key] = next.toInt()
+            // Do not coalesce non-adjacent nodes: a later use of the same recipe can depend on
+            // an intermediate source planned after its earlier use.
+            steps += AutoCraftStep(key, crafts)
             return if (steps.size > policy.maxNodes) "node-limit" else null
         }
 
@@ -86,7 +86,7 @@ class AutoCraftPlanner(private val matcher: CraftMatcher = CraftMatcher()) {
         }
         visiting.remove(targetKey)
         addStep(target, targetCrafts)?.let { return AutoCraftPlanResult.Failure(it) }
-        return AutoCraftPlanResult.Success(steps.map { AutoCraftStep(it.key, it.value) })
+        return AutoCraftPlanResult.Success(steps)
     }
 
     /** Compatibility overload for callers that only need dependency validation. */
