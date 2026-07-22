@@ -488,6 +488,11 @@ class MenuService(
             if (check.permissionDenied) lore += Text.c("#ff6961• Permission: denied")
             if (check.levelMissing > 0) lore += Text.c("#ff6961• Level: need ${check.levelMissing} more")
             if (check.moneyMissing > 0.0) lore += Text.c("#ff6961• Money: need ${check.moneyMissing}")
+            check.conditionDenied.forEach { condition -> lore += Text.c("#ff6961• Requirement: $condition") }
+            recipe.catalyst?.let { lore += Text.c("#ffd166• Catalyst: ${it.amount}x ${it.item.mmoId ?: it.item.material}") }
+            recipe.station.material?.let { lore += Text.c("#7cf5ff• Station: $it (r${recipe.station.radius})") }
+            if (recipe.outcome.criticalChance > 0.0) lore += Text.c("#ffd166• Critical: ${recipe.outcome.criticalChance}% (+${recipe.outcome.criticalBonusCrafts} craft)")
+            recipe.outcome.byproduct?.let { lore += Text.c("#d6f7ff• Byproduct: ${recipe.outcome.byproductChance}% ${it.mmoId ?: it.material}") }
             lore += Text.c("#8ea3b0• Available crafts: ${check.craftableAmount}")
             lore += Text.c("#d6f7ff› Left click: craft x${recipe.craft.leftAmount}")
             lore += Text.c("#d6f7ff› Right click: craft x${recipe.craft.rightAmount}")
@@ -502,6 +507,8 @@ class MenuService(
             "#d6f7ff• Enchant: ${recipe.extraction.enchant}",
             "#d6f7ff• Gemstone: ${recipe.extraction.gemstone}",
             "#d6f7ff• Level: ${recipe.extraction.level}",
+            "#7cf5ff• Station: ${recipe.station.material ?: "none"}",
+            "#ffd166• Catalyst: ${recipe.catalyst?.item?.mmoId ?: recipe.catalyst?.item?.material ?: "none"}",
             "#8ea3b0› Items with fewer risks are consumed first."
         ))
     }
