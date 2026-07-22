@@ -50,6 +50,16 @@ class RecipeWriter {
         yaml.set("auraskills.skill", recipe.auraSkills.skill)
         yaml.set("auraskills.minimum-level", recipe.auraSkills.minimumLevel)
         yaml.set("auraskills.experience", recipe.auraSkills.experience)
+        recipe.catalyst?.let {
+            yaml.set("catalyst.amount", it.amount)
+            writeItem(yaml, "catalyst.item", it.item)
+        }
+        yaml.set("station.material", recipe.station.material)
+        yaml.set("station.radius", recipe.station.radius)
+        yaml.set("outcome.critical.chance", recipe.outcome.criticalChance)
+        yaml.set("outcome.critical.bonus-crafts", recipe.outcome.criticalBonusCrafts)
+        yaml.set("outcome.byproduct.chance", recipe.outcome.byproductChance)
+        recipe.outcome.byproduct?.let { writeItem(yaml, "outcome.byproduct.item", it) }
 
         saveAtomic(file, yaml)
     }

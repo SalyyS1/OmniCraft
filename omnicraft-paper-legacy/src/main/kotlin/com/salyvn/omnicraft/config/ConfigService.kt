@@ -3,6 +3,9 @@ package com.salyvn.omnicraft.config
 import com.salyvn.omnicraft.OmniCraftPlugin
 import com.salyvn.omnicraft.core.CraftBehavior
 import com.salyvn.omnicraft.core.CraftCategory
+import com.salyvn.omnicraft.core.CraftCatalyst
+import com.salyvn.omnicraft.core.CraftStationPolicy
+import com.salyvn.omnicraft.core.CraftOutcomePolicy
 import com.salyvn.omnicraft.core.CraftIngredient
 import com.salyvn.omnicraft.core.CraftItem
 import com.salyvn.omnicraft.core.CraftLimits
@@ -102,8 +105,14 @@ class ConfigService(private val plugin: OmniCraftPlugin) {
             for (recipe in category.recipes) {
                 if (!recipeIds.add(recipe.id.lowercase())) issues += "Duplicate recipe '${category.id}:${recipe.id}'"
                 if (recipe.ingredients.isEmpty()) issues += "Recipe '${category.id}:${recipe.id}' has no ingredients"
+                if (recipe.ingredients.any { it.id == "__catalyst" }) issues += "Recipe '${category.id}:${recipe.id}' uses reserved ingredient id '__catalyst'"
                 if (recipe.ingredients.size > 16) issues += "Recipe '${category.id}:${recipe.id}' has more than 16 ingredients"
                 if (recipe.output.amount <= 0) issues += "Recipe '${category.id}:${recipe.id}' output amount must be positive"
+                if (!recipe.outcome.criticalChance.isFinite() || recipe.outcome.criticalChance !in 0.0..100.0) issues += "Recipe '${category.id}:${recipe.id}' critical chance must be 0..100"
+                if (!recipe.outcome.byproductChance.isFinite() || recipe.outcome.byproductChance !in 0.0..100.0) issues += "Recipe '${category.id}:${recipe.id}' byproduct chance must be 0..100"
+                recipe.station.material?.let { material ->
+                    if (Material.matchMaterial(material) == null) issues += "Recipe '${category.id}:${recipe.id}' station material '$material' is invalid"
+                }
                 if (recipe.extraction.successRate !in 0.0..1.0) issues += "Recipe '${category.id}:${recipe.id}' extraction success rate must be 0..1"
                 if (recipe.output.advancedEnchantments.any { it.id.isBlank() }) issues += "Recipe '${category.id}:${recipe.id}' has blank AdvancedEnchantments id"
                 recipe.auraSkills.skill?.let { skill ->
@@ -211,6 +220,17 @@ class ConfigService(private val plugin: OmniCraftPlugin) {
                 skill = yaml.getString("auraskills.skill")?.trim()?.takeIf { it.isNotEmpty() },
                 minimumLevel = yaml.getInt("auraskills.minimum-level", 0).coerceAtLeast(0),
                 experience = yaml.getDouble("auraskills.experience", 0.0).takeIf { it.isFinite() }?.coerceAtLeast(0.0) ?: 0.0
+            ),
+            catalyst = loadItem(yaml, "catalyst.item")?.let { CraftCatalyst(it, yaml.getInt("catalyst.amount", 1).coerceAtLeast(1)) },
+            station = CraftStationPolicy(
+                material = yaml.getString("station.material")?.trim()?.takeIf { it.isNotEmpty() },
+                radius = yaml.getInt("station.radius", 0).coerceIn(0, 6)
+            ),
+            outcome = CraftOutcomePolicy(
+                criticalChance = yaml.getDouble("outcome.critical.chance", 0.0).takeIf { it.isFinite() }?.coerceIn(0.0, 100.0) ?: 0.0,
+                criticalBonusCrafts = yaml.getInt("outcome.critical.bonus-crafts", 0).coerceIn(0, 64),
+                byproduct = loadItem(yaml, "outcome.byproduct.item"),
+                byproductChance = yaml.getDouble("outcome.byproduct.chance", 0.0).takeIf { it.isFinite() }?.coerceIn(0.0, 100.0) ?: 0.0
             )
         )
     }

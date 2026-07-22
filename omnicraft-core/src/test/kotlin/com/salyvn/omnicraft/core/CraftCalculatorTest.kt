@@ -90,6 +90,22 @@ class CraftCalculatorTest {
     }
 
     @Test
+    fun `consumed catalyst is allocated with ingredients without double spending`() {
+        val planks = CraftItem(ItemMode.VANILLA, "OAK_PLANKS", 1)
+        val catalystRecipe = recipe.copy(
+            ingredients = listOf(CraftIngredient("planks", planks, 3)),
+            catalyst = CraftCatalyst(planks, 1),
+            requirements = CraftRequirements()
+        )
+
+        val insufficient = listOf(InventoryEntry(0, ItemKey(ItemMode.VANILLA, "OAK_PLANKS"), 3))
+        val sufficient = listOf(InventoryEntry(0, ItemKey(ItemMode.VANILLA, "OAK_PLANKS"), 4))
+
+        assertEquals(0, calculator.check(catalystRecipe, insufficient, true, 0, 0.0, emptyList()).craftableAmount)
+        assertEquals(1, calculator.check(catalystRecipe, sufficient, true, 0, 0.0, emptyList()).craftableAmount)
+    }
+
+    @Test
     fun `money cap limits bulk quote and invalid quantities fail closed`() {
         val cheapRecipe = recipe.copy(requirements = CraftRequirements(money = 10.0))
         val inventory = listOf(

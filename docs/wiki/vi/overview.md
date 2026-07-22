@@ -77,4 +77,12 @@ AutoCraft bật mặc định nhưng có thể tắt toàn cục bằng `feature
 
 AuraSkills là soft-depend: thiếu AuraSkills không làm OmniCraft lỗi khởi động. Chỉ recipe có block `auraskills` mới yêu cầu plugin này; XP chỉ được gửi sau khi transaction craft đã commit.
 
+## RPG progression nội bộ
+
+Recipe có thể dùng `station.material` và `station.radius` để bắt người chơi đứng gần một block trạm cụ thể. Kiểm tra này chạy lại ở lần commit, nên countdown hoặc AutoCraft không thể tiêu nguyên liệu sau khi rời trạm. Block material không hợp lệ sẽ xuất hiện trong `/oc validate`.
+
+`catalyst.item` là vật phẩm bị tiêu theo `catalyst.amount` cho mỗi craft. Catalyst được phân bổ chung với ingredient trong một transaction nên không thể dùng chung một slot hai lần.
+
+`outcome.critical` và `outcome.byproduct` đều là opt-in. Critical thêm `bonus-crafts` output khi trúng; byproduct tạo output phụ theo chance. Kết quả dùng seed được audit, chance bị giới hạn 0–100, và plugin reserve chỗ cho trường hợp output lớn nhất trước khi tiêu bất kỳ nguyên liệu nào.
+
 Craft có thời gian và AutoCraft đều là online-only: logout, reload hoặc sửa recipe sẽ hủy job trước khi có transaction mới. Không có offline craft hay offline claim. Nếu server restart khi queue đang chờ node mới, người chơi online có thể dùng `/oc autocraft-resume`; queue sẽ được kiểm lại quyền và recipe trước khi chạy. Bất kỳ node nào đang commit lúc restart đều bị cô lập, không bao giờ tự phát lại.

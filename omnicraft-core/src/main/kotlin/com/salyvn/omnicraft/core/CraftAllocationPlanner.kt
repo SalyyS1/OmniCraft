@@ -14,7 +14,7 @@ class CraftAllocationPlanner(private val matcher: CraftMatcher = CraftMatcher())
         val remainingBySlot = inventory.associate { it.slot to it.amount }.toMutableMap()
         val allocations = linkedMapOf<String, MutableList<InventoryEntry>>()
 
-        for (ingredient in recipe.ingredients) {
+        for (ingredient in recipe.consumedInputs()) {
             if (ingredient.requiredAmount <= 0) {
                 return CraftAllocationResult.InvalidQuantity("ingredient ${ingredient.id} must require a positive amount")
             }

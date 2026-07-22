@@ -82,8 +82,9 @@ class CraftCalculator(private val matcher: CraftMatcher = CraftMatcher()) {
     }
 
     private fun maximumMaterialCrafts(recipe: CraftRecipe, inventory: List<InventoryEntry>): Int {
-        if (recipe.ingredients.isEmpty() || recipe.output.amount <= 0 || inventory.any { it.amount < 0 }) return 0
-        val roughUpperBound = recipe.ingredients.minOfOrNull { ingredient ->
+        val inputs = recipe.consumedInputs()
+        if (inputs.isEmpty() || recipe.output.amount <= 0 || inventory.any { it.amount < 0 }) return 0
+        val roughUpperBound = inputs.minOfOrNull { ingredient ->
             if (ingredient.requiredAmount <= 0) return 0
             inventory.asSequence().filter { matcher.matches(ingredient.item, it) }.sumOf { it.amount.coerceAtLeast(0) } / ingredient.requiredAmount
         } ?: return 0

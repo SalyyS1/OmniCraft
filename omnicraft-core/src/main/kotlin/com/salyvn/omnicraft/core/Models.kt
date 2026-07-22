@@ -21,8 +21,16 @@ data class CraftRecipe(
     val extraction: ExtractionPolicy,
     val limits: CraftLimits,
     val options: RecipeOptions = RecipeOptions(),
-    val auraSkills: AuraSkillsPolicy = AuraSkillsPolicy()
-)
+    val auraSkills: AuraSkillsPolicy = AuraSkillsPolicy(),
+    val catalyst: CraftCatalyst? = null,
+    val station: CraftStationPolicy = CraftStationPolicy(),
+    val outcome: CraftOutcomePolicy = CraftOutcomePolicy()
+) {
+    /** The catalyst is allocated with regular ingredients so a physical slot cannot be spent twice. */
+    fun consumedInputs(): List<CraftIngredient> = catalyst?.let {
+        ingredients + CraftIngredient("__catalyst", it.item, it.amount)
+    } ?: ingredients
+}
 
 /**
  * Stable identity for a recipe outside configuration and GUI display objects.
@@ -112,6 +120,26 @@ data class ExtractionPolicy(
 data class CraftLimits(
     val daily: Int = -1,
     val weekly: Int = -1
+)
+
+/** Optional, consumed per craft. A catalyst is never treated as a reusable cached item. */
+data class CraftCatalyst(
+    val item: CraftItem,
+    val amount: Int = 1
+)
+
+/** Optional nearby block requirement. Null material leaves the recipe station-agnostic. */
+data class CraftStationPolicy(
+    val material: String? = null,
+    val radius: Int = 0
+)
+
+/** Optional deterministic post-commit outcome modifiers. Values are validated and clamped by the loader. */
+data class CraftOutcomePolicy(
+    val criticalChance: Double = 0.0,
+    val criticalBonusCrafts: Int = 0,
+    val byproduct: CraftItem? = null,
+    val byproductChance: Double = 0.0
 )
 
 /** Optional AuraSkills contract. Empty skill means AuraSkills is not required for this recipe. */

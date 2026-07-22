@@ -8,6 +8,7 @@ import com.salyvn.omnicraft.core.CraftDurationPolicy
 import com.salyvn.omnicraft.core.CraftJobStopReason
 import com.salyvn.omnicraft.core.CraftLocks
 import com.salyvn.omnicraft.core.CraftMatcher
+import com.salyvn.omnicraft.core.CraftOutcomeResolver
 import com.salyvn.omnicraft.core.CraftRecipe
 import com.salyvn.omnicraft.core.ExtractionMode
 import com.salyvn.omnicraft.core.RecipeKey
@@ -28,6 +29,8 @@ class CraftService(
 ) {
     private val calculator = CraftCalculator()
     private val speedProvider = CraftSpeedProvider(plugin, hooks)
+    private val stations = CraftStationService()
+    private val outcomes = CraftOutcomeResolver()
     private val jobs = CraftJobService(plugin)
     private val locks = CraftLocks(plugin.config.getLong("anti-dupe.lock-timeout-ms", 10_000).coerceAtLeast(1))
 
@@ -213,7 +216,10 @@ class CraftService(
             val extractedEnchants = mutableListOf<ExtractedAdvancedEnchant>()
             val keptEnchantGroups = mutableListOf<List<ExtractedAdvancedEnchant>>()
             chargedMoney = quote.totalMoney
-            val output = outputStacks(recipe, crafts, emptyList())
+            val maximumOutcome = outcomes.maximum(recipe, crafts)
+            val maximumPrimaryOutput = outputStacks(recipe, maximumOutcome.outputCrafts, emptyList())
+            val maximumByproducts = byproductStacks(recipe, maximumOutcome.byproducts)
+            val output = if (maximumPrimaryOutput == null || maximumByproducts == null) null else maximumPrimaryOutput + maximumByproducts
             val conservativeKeepSlots = 0
             val projectedStorage = player.inventory.storageContents.map { it?.clone() }.toTypedArray()
             plan.values.flatten().forEach { entry ->
@@ -229,7 +235,7 @@ class CraftService(
                 return
             }
             for ((ingredientId, entries) in plan) {
-                val ingredient = recipe.ingredients.firstOrNull { it.id == ingredientId }
+                val ingredient = recipe.consumedInputs().firstOrNull { it.id == ingredientId }
                 if (ingredient == null) {
                     audit.record(player, recipe, crafts, "fail", "invalid-allocation")
                     usage.release(reservation)
@@ -267,7 +273,10 @@ class CraftService(
             }
             moneyWithdrawn = true
 
-            val enrichedOutput = outputStacks(recipe, crafts, keptEnchantGroups)
+            val outcome = outcomes.resolve(recipe, crafts, Random.nextLong())
+            val primaryOutput = outputStacks(recipe, outcome.outputCrafts, keptEnchantGroups)
+            val byproducts = byproductStacks(recipe, outcome.byproducts)
+            val enrichedOutput = if (primaryOutput == null || byproducts == null) null else primaryOutput + byproducts
             if (enrichedOutput == null) {
                 rollback(player, removed)
                 plugin.pendingRefunds.refundOrQueue(player, chargedMoney)
@@ -289,7 +298,7 @@ class CraftService(
             committed = true
             grantAuraSkillsXp(player, recipe, crafts)
             handleAdvancedEnchantExtraction(player, recipe, extractedEnchants)
-            audit.record(player, recipe, crafts, "success")
+            audit.record(player, recipe, crafts, "success", "seed=${outcome.seed},critical=${outcome.criticalCrafts},byproduct=${outcome.byproducts}")
             if (recipe.options.rareBroadcast && plugin.config.getBoolean("history.log-rare-recipes", true)) {
                 plugin.server.broadcast(Text.c(config.message("broadcast.rare-craft", "#ffd166{player} crafted {amount}x {item}.")
                     .replace("{player}", player.name)
@@ -298,7 +307,7 @@ class CraftService(
             }
             plugin.logger.info("craft success player=${player.name} recipe=${recipe.categoryId}:${recipe.id} amount=$crafts")
             player.sendMessage(Text.c(config.message("success.crafted", "#71f79fCrafted {amount}x {item}.")
-                .replace("{amount}", crafts.toString())
+                .replace("{amount}", outcome.outputCrafts.toString())
                 .replace("{item}", recipe.displayName)))
         } catch (exception: Exception) {
             if (!committed) {
@@ -325,6 +334,7 @@ class CraftService(
         deniedConditions = hooks.deniedConditions(player, recipe.requirements.papiConditions)
             .plus(missingHookFailures(recipe))
             .plus(auraSkillsFailures(player, recipe))
+            .plus(stations.failure(player, recipe)?.let(::listOf).orEmpty())
     )
 
     private fun auraSkillsFailures(player: Player, recipe: CraftRecipe): List<String> {
@@ -412,6 +422,25 @@ class CraftService(
             }
             val take = minOf(remaining, maxStack)
             stacks += ItemAdapter.tryFromCraftItem(recipe.output, take) ?: return null
+            remaining -= take
+        }
+        return stacks
+    }
+
+    private fun byproductStacks(recipe: CraftRecipe, count: Int): List<ItemStack>? {
+        if (count <= 0) return emptyList()
+        val byproduct = recipe.outcome.byproduct ?: return emptyList()
+        var remaining = try {
+            Math.multiplyExact(byproduct.amount, count)
+        } catch (_: ArithmeticException) {
+            return null
+        }
+        val base = ItemAdapter.tryFromCraftItem(byproduct, 1) ?: return null
+        val maxStack = base.maxStackSize.coerceAtLeast(1)
+        val stacks = mutableListOf<ItemStack>()
+        while (remaining > 0) {
+            val take = minOf(remaining, maxStack)
+            stacks += ItemAdapter.tryFromCraftItem(byproduct, take) ?: return null
             remaining -= take
         }
         return stacks
