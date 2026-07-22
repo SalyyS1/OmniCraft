@@ -20,6 +20,7 @@ craft-time:
   enabled: false
   seconds: 5
   cancel-on-move: false
+  # Online-only safety policy: logout always cancels an active timed craft.
   cancel-on-logout: true
   reopen-menu: true
   title-each-second: true

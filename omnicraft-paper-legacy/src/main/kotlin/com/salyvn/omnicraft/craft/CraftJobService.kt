@@ -43,7 +43,11 @@ class CraftJobService(private val plugin: OmniCraftPlugin) {
         return removed.job.copy(state = CraftJobState.CANCELLED, stopReason = reason)
     }
 
+    fun cancelAll(reason: CraftJobStopReason) {
+        active.keys.toList().forEach { cancel(it, reason) }
+    }
+
     fun shutdown() {
-        active.keys.toList().forEach { cancel(it, CraftJobStopReason.SERVER_STOPPING) }
+        cancelAll(CraftJobStopReason.SERVER_STOPPING)
     }
 }

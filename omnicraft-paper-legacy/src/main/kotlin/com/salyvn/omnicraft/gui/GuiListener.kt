@@ -237,7 +237,7 @@ class GuiListener(
 
     @EventHandler
     fun onMove(event: PlayerMoveEvent) {
-        if (event.from.blockX == event.to.blockX && event.from.blockY == event.to.blockY && event.from.blockZ == event.to.blockZ) return
+        if (event.from.world == event.to.world && event.from.blockX == event.to.blockX && event.from.blockY == event.to.blockY && event.from.blockZ == event.to.blockZ) return
         craft.cancelOnMove(event.player.uniqueId)
     }
 

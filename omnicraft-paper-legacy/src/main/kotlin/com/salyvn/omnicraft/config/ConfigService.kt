@@ -55,11 +55,13 @@ class ConfigService(private val plugin: OmniCraftPlugin) {
     }
 
     fun saveRecipe(recipe: CraftRecipe) {
+        plugin.cancelActiveCrafting("cancelled: recipe updated")
         writer.saveAtomic(recipeFile(recipe.categoryId, recipe.id), recipe)
         reload()
     }
 
     fun deleteRecipe(categoryId: String, recipeId: String): Boolean {
+        plugin.cancelActiveCrafting("cancelled: recipe updated")
         val deleted = recipeFile(categoryId, recipeId).delete()
         reload()
         return deleted
@@ -162,7 +164,8 @@ class ConfigService(private val plugin: OmniCraftPlugin) {
                 enabled = yaml.getBoolean("craft-time.enabled", plugin.config.getBoolean("craft-time.enabled", false)),
                 seconds = yaml.getInt("craft-time.seconds", plugin.config.getInt("craft-time.seconds", 0)),
                 cancelOnMove = yaml.getBoolean("craft-time.cancel-on-move", plugin.config.getBoolean("craft-time.cancel-on-move", false)),
-                cancelOnLogout = yaml.getBoolean("craft-time.cancel-on-logout", plugin.config.getBoolean("craft-time.cancel-on-logout", true)),
+                // Timed work is online-only; retaining this model field avoids breaking API consumers.
+                cancelOnLogout = true,
                 quantityScaling = runCatching {
                     CraftQuantityScaling.valueOf(yaml.getString("craft-time.quantity-scaling", "LINEAR")!!.uppercase())
                 }.getOrDefault(CraftQuantityScaling.LINEAR),
@@ -185,10 +188,18 @@ class ConfigService(private val plugin: OmniCraftPlugin) {
                 rareBroadcast = yaml.getBoolean("options.rare-broadcast", false),
                 sourceHints = (yaml.getConfigurationSection("options.source-hints")?.getKeys(false)
                     ?.associateWith { key -> yaml.getString("options.source-hints.$key", "") ?: "" }
-                    ?: emptyMap()) + mapOf(
-                    "auto-craft.enabled" to yaml.getBoolean("auto-craft.enabled", false).toString(),
-                    "auto-craft.priority" to yaml.getInt("auto-craft.priority", 0).toString()
-                )
+                    ?: emptyMap()).let { sourceHints ->
+                    val legacyEnabled = yaml.getString("options.source-hints.auto-craft.enabled")
+                        ?: sourceHints["auto-craft.enabled"]
+                    val legacyPriority = yaml.getString("options.source-hints.auto-craft.priority")
+                        ?: sourceHints["auto-craft.priority"]
+                    sourceHints + buildMap {
+                        if (yaml.contains("auto-craft.enabled")) put("auto-craft.enabled", yaml.getBoolean("auto-craft.enabled").toString())
+                        else if (legacyEnabled != null) put("auto-craft.enabled", legacyEnabled)
+                        if (yaml.contains("auto-craft.priority")) put("auto-craft.priority", yaml.getInt("auto-craft.priority").toString())
+                        else if (legacyPriority != null) put("auto-craft.priority", legacyPriority)
+                    }
+                }
             )
         )
     }

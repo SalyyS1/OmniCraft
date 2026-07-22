@@ -71,3 +71,5 @@ auto-craft:
 AutoCraft bật mặc định nhưng có thể tắt toàn cục bằng `features.auto-craft: false`. Đánh dấu **chỉ recipe trung gian** bằng `auto-craft.enabled: true`, rồi người chơi bấm nút **AutoCraft** trong màn recipe hoặc dùng `/oc autocraft <recipe> [amount]`. Hệ thống ưu tiên nguyên liệu đang có trong inventory, chọn source theo `priority` rồi theo key, phát hiện cycle/depth limit và hủy queue khi logout hoặc reload. Mỗi node vẫn đi qua cùng transaction, quota, Vault và craft-time như craft thường. `auto-craft.max-active-runs` và `max-target-crafts` giữ tải server trong giới hạn cố định.
 
 AuraSkills là soft-depend: có thể dùng placeholder của AuraSkills trong cấu hình Fast Craft qua PlaceholderAPI, nhưng plugin không gọi API AuraSkills trực tiếp nên thiếu AuraSkills không làm OmniCraft lỗi khởi động.
+
+Craft có thời gian và AutoCraft đều là online-only: logout, reload hoặc sửa recipe sẽ hủy job trước khi có transaction mới. Không có offline craft hay offline claim.

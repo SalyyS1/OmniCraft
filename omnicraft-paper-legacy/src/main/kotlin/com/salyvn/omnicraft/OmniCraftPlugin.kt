@@ -72,9 +72,14 @@ open class OmniCraftPlugin : JavaPlugin() {
     }
 
     fun reloadAll() {
-        if (::craftQueueService.isInitialized) craftQueueService.cancelAll("cancelled on reload")
+        cancelActiveCrafting("cancelled on reload")
         reloadConfig()
         configService.reload()
+    }
+
+    fun cancelActiveCrafting(reason: String) {
+        if (::craftQueueService.isInitialized) craftQueueService.cancelAll(reason)
+        if (::craftService.isInitialized) craftService.cancelAll()
     }
 
     private fun logHookStatus() {

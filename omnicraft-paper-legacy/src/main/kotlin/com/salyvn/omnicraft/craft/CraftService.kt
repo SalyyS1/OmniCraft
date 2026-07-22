@@ -87,6 +87,11 @@ class CraftService(
         locks.unlockPlayer(playerId)
     }
 
+    fun cancelAll(reason: CraftJobStopReason = CraftJobStopReason.PLAYER_CANCELLED) {
+        jobs.cancelAll(reason)
+        locks.clear()
+    }
+
     fun cancelOnMove(playerId: java.util.UUID) {
         val job = jobs.activeJob(playerId) ?: return
         val recipe = config.recipe(job.recipeKey.categoryId, job.recipeKey.recipeId) ?: return cancelPlayer(playerId, CraftJobStopReason.MOVED)
@@ -169,6 +174,11 @@ class CraftService(
         var chargedMoney = 0.0
         var inventoryBeforeMutation: Array<ItemStack?>? = null
         try {
+            if (!isServerLoadSafe()) {
+                audit.record(player, recipe, 0, "fail", "server-busy")
+                player.sendMessage(Text.c(config.message("errors.server-busy", "#ff6961Crafting is paused while the server is busy.")))
+                return
+            }
             val check = check(player, recipe)
             val crafts = requestedCrafts ?: calculator.requestedAmount(recipe, mode, check.craftableAmount)
             if (!recipe.options.enabled) {
