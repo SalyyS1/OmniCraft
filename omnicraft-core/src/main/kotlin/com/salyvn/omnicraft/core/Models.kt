@@ -20,7 +20,8 @@ data class CraftRecipe(
     val craftTime: CraftTime,
     val extraction: ExtractionPolicy,
     val limits: CraftLimits,
-    val options: RecipeOptions = RecipeOptions()
+    val options: RecipeOptions = RecipeOptions(),
+    val auraSkills: AuraSkillsPolicy = AuraSkillsPolicy()
 )
 
 /**
@@ -112,6 +113,20 @@ data class CraftLimits(
     val daily: Int = -1,
     val weekly: Int = -1
 )
+
+/** Optional AuraSkills contract. Empty skill means AuraSkills is not required for this recipe. */
+data class AuraSkillsPolicy(
+    val skill: String? = null,
+    val minimumLevel: Int = 0,
+    val experience: Double = 0.0
+) {
+    companion object {
+        val DEFAULT_SKILLS = setOf(
+            "FARMING", "FORAGING", "MINING", "FISHING", "EXCAVATION", "ARCHERY", "FIGHTING", "DEFENSE",
+            "AGILITY", "ENDURANCE", "ALCHEMY", "ENCHANTING", "SORCERY", "HEALING", "FORGING"
+        )
+    }
+}
 
 data class RecipeOptions(
     val enabled: Boolean = true,

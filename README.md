@@ -18,7 +18,7 @@ Built jars are committed in `dist/`.
 3. Edit `plugins/OmniCraft/config.yml`, `plugins/OmniCraft/messages.yml`, and recipe files under `plugins/OmniCraft/category/`.
 4. Run `/oc reload` or restart.
 
-Optional hooks: MMOItems, MythicLib, AdvancedEnchantments, Vault, PlaceholderAPI, AuraSkills, OmniGemStone, OmniEnchants, OmniTooltips, OmniMinMax, OmniDelta, OmniSet, OmniLore, OmniModifier, OmniPopupPickup, OmniTotalStats. AuraSkills is a soft-depend; its PlaceholderAPI values can be used by Fast Craft without requiring a direct AuraSkills API binding.
+Optional hooks: MMOItems, MythicLib, AdvancedEnchantments, Vault, PlaceholderAPI, AuraSkills, OmniGemStone, OmniEnchants, OmniTooltips, OmniMinMax, OmniDelta, OmniSet, OmniLore, OmniModifier, OmniPopupPickup, OmniTotalStats. AuraSkills is a soft-depend: recipes can require a default AuraSkills skill level and award XP after a committed craft; its PlaceholderAPI values can also drive Fast Craft.
 
 ## Commands
 

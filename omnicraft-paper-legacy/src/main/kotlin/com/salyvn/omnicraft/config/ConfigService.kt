@@ -14,6 +14,7 @@ import com.salyvn.omnicraft.core.ExtractionMode
 import com.salyvn.omnicraft.core.ExtractionPolicy
 import com.salyvn.omnicraft.core.ItemMode
 import com.salyvn.omnicraft.core.AdvancedEnchant
+import com.salyvn.omnicraft.core.AuraSkillsPolicy
 import com.salyvn.omnicraft.core.RecipeOptions
 import org.bukkit.Material
 import org.bukkit.configuration.file.YamlConfiguration
@@ -105,6 +106,11 @@ class ConfigService(private val plugin: OmniCraftPlugin) {
                 if (recipe.output.amount <= 0) issues += "Recipe '${category.id}:${recipe.id}' output amount must be positive"
                 if (recipe.extraction.successRate !in 0.0..1.0) issues += "Recipe '${category.id}:${recipe.id}' extraction success rate must be 0..1"
                 if (recipe.output.advancedEnchantments.any { it.id.isBlank() }) issues += "Recipe '${category.id}:${recipe.id}' has blank AdvancedEnchantments id"
+                recipe.auraSkills.skill?.let { skill ->
+                    if (skill.uppercase() !in AuraSkillsPolicy.DEFAULT_SKILLS) {
+                        issues += "Recipe '${category.id}:${recipe.id}' AuraSkills skill '$skill' is not a supported default skill"
+                    }
+                }
             }
         }
         return issues
@@ -200,6 +206,11 @@ class ConfigService(private val plugin: OmniCraftPlugin) {
                         else if (legacyPriority != null) put("auto-craft.priority", legacyPriority)
                     }
                 }
+            ),
+            auraSkills = AuraSkillsPolicy(
+                skill = yaml.getString("auraskills.skill")?.trim()?.takeIf { it.isNotEmpty() },
+                minimumLevel = yaml.getInt("auraskills.minimum-level", 0).coerceAtLeast(0),
+                experience = yaml.getDouble("auraskills.experience", 0.0).takeIf { it.isFinite() }?.coerceAtLeast(0.0) ?: 0.0
             )
         )
     }

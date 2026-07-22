@@ -6,6 +6,7 @@ import com.salyvn.omnicraft.craft.AuditService
 import com.salyvn.omnicraft.craft.CraftService
 import com.salyvn.omnicraft.craft.UsageService
 import com.salyvn.omnicraft.craft.PendingRefundService
+import com.salyvn.omnicraft.craft.PendingAuraXpService
 import com.salyvn.omnicraft.craft.CraftQueueService
 import com.salyvn.omnicraft.gui.GuiListener
 import com.salyvn.omnicraft.gui.MenuService
@@ -30,6 +31,8 @@ open class OmniCraftPlugin : JavaPlugin() {
         private set
     lateinit var pendingRefunds: PendingRefundService
         private set
+    lateinit var pendingAuraXp: PendingAuraXpService
+        private set
     lateinit var craftQueueService: CraftQueueService
         private set
 
@@ -47,7 +50,12 @@ open class OmniCraftPlugin : JavaPlugin() {
         auditService = AuditService(this)
         pendingRefunds = PendingRefundService(this, hooks)
         pendingRefunds.load()
-        server.scheduler.runTaskTimer(this, Runnable { pendingRefunds.retryOnlinePlayers() }, 20L * 60, 20L * 60)
+        pendingAuraXp = PendingAuraXpService(this, hooks)
+        pendingAuraXp.load()
+        server.scheduler.runTaskTimer(this, Runnable {
+            pendingRefunds.retryOnlinePlayers()
+            pendingAuraXp.retryOnlinePlayers()
+        }, 20L * 60, 20L * 60)
         craftService = CraftService(this, configService, hooks, usageService, auditService)
         craftQueueService = CraftQueueService(this, configService, craftService)
         menuService = MenuService(configService, craftService, hooks)

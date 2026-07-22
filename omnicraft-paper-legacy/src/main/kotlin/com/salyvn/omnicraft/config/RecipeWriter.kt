@@ -51,6 +51,9 @@ class RecipeWriter {
         recipe.options.sourceHints.forEach { (key, value) -> yaml.set("options.source-hints.$key", value) }
         yaml.set("auto-craft.enabled", recipe.options.sourceHints["auto-craft.enabled"]?.toBooleanStrictOrNull() ?: false)
         yaml.set("auto-craft.priority", recipe.options.sourceHints["auto-craft.priority"]?.toIntOrNull() ?: 0)
+        yaml.set("auraskills.skill", recipe.auraSkills.skill)
+        yaml.set("auraskills.minimum-level", recipe.auraSkills.minimumLevel)
+        yaml.set("auraskills.experience", recipe.auraSkills.experience)
 
         saveAtomic(file, yaml)
     }

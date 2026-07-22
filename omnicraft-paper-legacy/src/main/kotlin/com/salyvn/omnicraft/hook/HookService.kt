@@ -132,9 +132,39 @@ class HookService(private val plugin: JavaPlugin) {
         return Bukkit.getPluginManager().isPluginEnabled(name)
     }
 
+    fun auraSkillsLevel(player: Player, skillId: String): Int? {
+        if (!enabled("AuraSkills")) return null
+        return runCatching {
+            val apiClass = Class.forName("dev.aurelium.auraskills.api.AuraSkillsApi")
+            val api = apiClass.getMethod("get").invoke(null)
+            val user = api.javaClass.methods.first { it.name == "getUser" && it.parameterCount == 1 }.invoke(api, player.uniqueId)
+            val skill = auraSkill(skillId) ?: return@runCatching null
+            (user.javaClass.methods.first { it.name == "getSkillLevel" && it.parameterCount == 1 }.invoke(user, skill) as Number).toInt()
+        }.getOrNull()
+    }
+
+    fun addAuraSkillsXp(player: Player, skillId: String, amount: Double): Boolean {
+        if (amount <= 0.0 || !amount.isFinite() || !enabled("AuraSkills")) return false
+        return runCatching {
+            val apiClass = Class.forName("dev.aurelium.auraskills.api.AuraSkillsApi")
+            val api = apiClass.getMethod("get").invoke(null)
+            val user = api.javaClass.methods.first { it.name == "getUser" && it.parameterCount == 1 }.invoke(api, player.uniqueId)
+            val skill = auraSkill(skillId) ?: return@runCatching false
+            user.javaClass.methods.first { it.name == "addSkillXp" && it.parameterCount == 2 }.invoke(user, skill, amount)
+            true
+        }.getOrDefault(false)
+    }
+
     private fun mmoPlugin(): Any? {
         val clazz = Class.forName("net.Indyuce.mmoitems.MMOItems")
         return clazz.getField("plugin").get(null)
+    }
+
+    private fun auraSkill(skillId: String): Any? {
+        val requested = skillId.trim().uppercase()
+        return Class.forName("dev.aurelium.auraskills.api.skill.Skills").enumConstants
+            ?.filterIsInstance<Enum<*>>()
+            ?.firstOrNull { it.name == requested }
     }
 
     private fun parseEnchantResult(result: Any): Map<String, Int> {

@@ -287,6 +287,7 @@ class CraftService(
             }
 
             committed = true
+            grantAuraSkillsXp(player, recipe, crafts)
             handleAdvancedEnchantExtraction(player, recipe, extractedEnchants)
             audit.record(player, recipe, crafts, "success")
             if (recipe.options.rareBroadcast && plugin.config.getBoolean("history.log-rare-recipes", true)) {
@@ -323,7 +324,22 @@ class CraftService(
         money = hooks.balance(player),
         deniedConditions = hooks.deniedConditions(player, recipe.requirements.papiConditions)
             .plus(missingHookFailures(recipe))
+            .plus(auraSkillsFailures(player, recipe))
     )
+
+    private fun auraSkillsFailures(player: Player, recipe: CraftRecipe): List<String> {
+        val policy = recipe.auraSkills
+        val skill = policy.skill ?: return emptyList()
+        val level = hooks.auraSkillsLevel(player, skill) ?: return listOf("AuraSkills:$skill")
+        return if (level < policy.minimumLevel) listOf("AuraSkills:$skill requires ${policy.minimumLevel}") else emptyList()
+    }
+
+    private fun grantAuraSkillsXp(player: Player, recipe: CraftRecipe, crafts: Int) {
+        val policy = recipe.auraSkills
+        val skill = policy.skill ?: return
+        val amount = policy.experience * crafts
+        if (amount > 0.0) plugin.pendingAuraXp.queue(player, "${recipe.categoryId}:${recipe.id}", skill, amount)
+    }
 
     private fun missingHookFailures(recipe: CraftRecipe): List<String> {
         val requiresAe = recipe.output.advancedEnchantments.isNotEmpty() ||

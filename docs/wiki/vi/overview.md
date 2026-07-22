@@ -27,7 +27,7 @@ OmniCraft là trạm chế tạo RPG/MMO cho Paper. Plugin kiểm tra nguyên li
 
 - **MMOItems 6.10.1-SNAPSHOT** và **MythicLib 1.7.1-SNAPSHOT** là soft-dependency: thiếu plugin thì OmniCraft vẫn khởi động; recipe cần MMOItems sẽ fail an toàn.
 - Vault dùng cho tiền, PlaceholderAPI dùng cho điều kiện và speed modifier, AdvancedEnchantments dùng cho KEEP/DESTROY/EXTRACT.
-- AuraSkills là soft-depend. Có thể dùng placeholder AuraSkills qua PlaceholderAPI cho Fast Craft; plugin chưa sở hữu XP hay profession API AuraSkills trực tiếp.
+- AuraSkills là soft-depend. Có thể dùng placeholder AuraSkills qua PlaceholderAPI cho Fast Craft; recipe cũng có thể yêu cầu level và thưởng XP cho default skill AuraSkills sau khi craft commit.
 
 ## An toàn chống dupe
 
@@ -66,10 +66,15 @@ craft-time:
 auto-craft:
   enabled: false
   priority: 0
+auraskills:
+  # Default AuraSkills skill, ví dụ FORGING. Bỏ block này để recipe không cần AuraSkills.
+  skill: FORGING
+  minimum-level: 10
+  experience: 12.5
 ```
 
 AutoCraft bật mặc định nhưng có thể tắt toàn cục bằng `features.auto-craft: false`. Đánh dấu **chỉ recipe trung gian** bằng `auto-craft.enabled: true`, rồi người chơi bấm nút **AutoCraft** trong màn recipe hoặc dùng `/oc autocraft <recipe> [amount]`. Hệ thống ưu tiên nguyên liệu đang có trong inventory, chọn source theo `priority` rồi theo key, phát hiện cycle/depth limit và hủy queue khi logout hoặc reload. Mỗi node vẫn đi qua cùng transaction, quota, Vault và craft-time như craft thường. `auto-craft.max-active-runs` và `max-target-crafts` giữ tải server trong giới hạn cố định.
 
-AuraSkills là soft-depend: có thể dùng placeholder của AuraSkills trong cấu hình Fast Craft qua PlaceholderAPI, nhưng plugin không gọi API AuraSkills trực tiếp nên thiếu AuraSkills không làm OmniCraft lỗi khởi động.
+AuraSkills là soft-depend: thiếu AuraSkills không làm OmniCraft lỗi khởi động. Chỉ recipe có block `auraskills` mới yêu cầu plugin này; XP chỉ được gửi sau khi transaction craft đã commit.
 
 Craft có thời gian và AutoCraft đều là online-only: logout, reload hoặc sửa recipe sẽ hủy job trước khi có transaction mới. Không có offline craft hay offline claim.
