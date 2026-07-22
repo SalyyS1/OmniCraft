@@ -81,7 +81,11 @@ outcome:
   critical: { chance: 10.0, bonus-crafts: 1 }
   byproduct:
     chance: 25.0
-    item: { mode: VANILLA, material: IRON_NUGGET, amount: 2 }</code></pre>
+    item: { mode: VANILLA, material: IRON_NUGGET, amount: 2 }
+  quality:
+    name: Masterwork
+    chance: 5.0
+    lore: ["#ffd166A rare masterwork."]</code></pre>
         <div class="callout">AutoCraft bật mặc định (có thể tắt bằng <code>features.auto-craft</code>): chỉ bật <code>auto-craft.enabled</code> cho recipe trung gian và dùng <code>/oc autocraft &lt;recipe&gt; [amount]</code>. Queue chạy khi online, ưu tiên inventory, chặn cycle/depth và hủy khi logout/reload. Sau restart, chỉ queue đang chờ mới được người chơi tự tiếp tục qua <code>/oc autocraft-resume</code>; craft đang commit không bao giờ bị phát lại.</div>
       </section>
 
@@ -90,6 +94,7 @@ outcome:
         <article><h3>Catalyst</h3><p>Catalyst là vật phẩm bị tiêu mỗi craft. Nó đi qua cùng allocation planner với ingredient, vì thế một stack không thể bị tính hai lần.</p></article>
         <article><h3>Critical</h3><p><code>bonus-crafts</code> thêm số lần output cho mỗi craft critical. Chance được clamp 0–100 và kết quả có seed trong audit log.</p></article>
         <article><h3>Byproduct</h3><p>Byproduct là output phụ có chance theo từng craft. OmniCraft reserve trước sức chứa cho kết quả lớn nhất; đầy inventory sẽ hủy nguyên giao dịch.</p></article>
+        <article><h3>Quality</h3><p>Quality tạo output có metadata/lore tier riêng theo chance. Mỗi roll dùng seed trong audit log. Quality không tương thích với AE <code>KEEP</code>, để không làm mất metadata enchant đã giữ.</p></article>
       </div></section>
 
       <section id="integrations" class="canvas searchable"><h2>Tích hợp</h2><div class="grid two">

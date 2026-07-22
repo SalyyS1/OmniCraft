@@ -6,6 +6,7 @@ import com.salyvn.omnicraft.core.CraftCategory
 import com.salyvn.omnicraft.core.CraftCatalyst
 import com.salyvn.omnicraft.core.CraftStationPolicy
 import com.salyvn.omnicraft.core.CraftOutcomePolicy
+import com.salyvn.omnicraft.core.CraftQualityPolicy
 import com.salyvn.omnicraft.core.CraftIngredient
 import com.salyvn.omnicraft.core.CraftItem
 import com.salyvn.omnicraft.core.CraftLimits
@@ -110,6 +111,9 @@ class ConfigService(private val plugin: OmniCraftPlugin) {
                 if (recipe.output.amount <= 0) issues += "Recipe '${category.id}:${recipe.id}' output amount must be positive"
                 if (!recipe.outcome.criticalChance.isFinite() || recipe.outcome.criticalChance !in 0.0..100.0) issues += "Recipe '${category.id}:${recipe.id}' critical chance must be 0..100"
                 if (!recipe.outcome.byproductChance.isFinite() || recipe.outcome.byproductChance !in 0.0..100.0) issues += "Recipe '${category.id}:${recipe.id}' byproduct chance must be 0..100"
+                if (!recipe.outcome.quality.chance.isFinite() || recipe.outcome.quality.chance !in 0.0..100.0) issues += "Recipe '${category.id}:${recipe.id}' quality chance must be 0..100"
+                if (recipe.outcome.quality.chance > 0.0 && recipe.outcome.quality.name.isNullOrBlank()) issues += "Recipe '${category.id}:${recipe.id}' quality chance requires a quality name"
+                if (!recipe.outcome.quality.name.isNullOrBlank() && recipe.extraction.enchant == ExtractionMode.KEEP) issues += "Recipe '${category.id}:${recipe.id}' quality cannot be combined with enchant KEEP"
                 recipe.station.material?.let { material ->
                     if (Material.matchMaterial(material) == null) issues += "Recipe '${category.id}:${recipe.id}' station material '$material' is invalid"
                 }
@@ -240,7 +244,12 @@ class ConfigService(private val plugin: OmniCraftPlugin) {
                 criticalChance = yaml.getDouble("outcome.critical.chance", 0.0).takeIf { it.isFinite() }?.coerceIn(0.0, 100.0) ?: 0.0,
                 criticalBonusCrafts = yaml.getInt("outcome.critical.bonus-crafts", 0).coerceIn(0, 64),
                 byproduct = loadItem(yaml, "outcome.byproduct.item"),
-                byproductChance = yaml.getDouble("outcome.byproduct.chance", 0.0).takeIf { it.isFinite() }?.coerceIn(0.0, 100.0) ?: 0.0
+                byproductChance = yaml.getDouble("outcome.byproduct.chance", 0.0).takeIf { it.isFinite() }?.coerceIn(0.0, 100.0) ?: 0.0,
+                quality = CraftQualityPolicy(
+                    name = yaml.getString("outcome.quality.name")?.trim()?.takeIf { it.isNotEmpty() },
+                    chance = yaml.getDouble("outcome.quality.chance", 0.0).takeIf { it.isFinite() }?.coerceIn(0.0, 100.0) ?: 0.0,
+                    lore = yaml.getStringList("outcome.quality.lore")
+                )
             )
         )
     }

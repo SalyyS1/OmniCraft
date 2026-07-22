@@ -139,7 +139,15 @@ data class CraftOutcomePolicy(
     val criticalChance: Double = 0.0,
     val criticalBonusCrafts: Int = 0,
     val byproduct: CraftItem? = null,
-    val byproductChance: Double = 0.0
+    val byproductChance: Double = 0.0,
+    val quality: CraftQualityPolicy = CraftQualityPolicy()
+)
+
+/** Optional display tier for crafted output. Empty name disables quality rolling. */
+data class CraftQualityPolicy(
+    val name: String? = null,
+    val chance: Double = 0.0,
+    val lore: List<String> = emptyList()
 )
 
 /** Optional AuraSkills contract. Empty skill means AuraSkills is not required for this recipe. */

@@ -2,6 +2,7 @@ package com.salyvn.omnicraft.item
 
 import com.salyvn.omnicraft.core.CraftItem
 import com.salyvn.omnicraft.core.ItemMode
+import com.salyvn.omnicraft.core.CraftQualityPolicy
 import com.salyvn.omnicraft.core.InventoryEntry
 import com.salyvn.omnicraft.core.ItemKey
 import com.salyvn.omnicraft.core.ItemRisk
@@ -15,6 +16,7 @@ import org.bukkit.persistence.PersistentDataType
 object ItemAdapter {
     var hooks: HookService? = null
     private val uidKey = NamespacedKey("omnicraft", "uid")
+    private val qualityKey = NamespacedKey("omnicraft", "quality")
 
     fun key(stack: ItemStack): ItemKey {
         val mmo = hooks?.mmoKey(stack)
@@ -76,6 +78,19 @@ object ItemAdapter {
                 name = meta?.displayName()?.let { Text.plain(it) },
                 lore = meta?.lore()?.map { Text.plain(it) } ?: emptyList()
             )
+        }
+    }
+
+    fun applyQuality(stack: ItemStack, quality: CraftQualityPolicy): ItemStack {
+        val name = quality.name?.trim()?.takeIf { it.isNotEmpty() } ?: return stack
+        return stack.clone().apply {
+            editMeta { meta ->
+                meta.persistentDataContainer.set(qualityKey, PersistentDataType.STRING, name)
+                val lore = meta.lore()?.toMutableList() ?: mutableListOf()
+                lore += Text.c("#ffd166✦ Quality: $name")
+                lore += quality.lore.map(Text::c)
+                meta.lore(lore)
+            }
         }
     }
 

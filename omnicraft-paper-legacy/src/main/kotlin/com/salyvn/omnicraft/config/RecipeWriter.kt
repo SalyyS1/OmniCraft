@@ -60,6 +60,9 @@ class RecipeWriter {
         yaml.set("outcome.critical.bonus-crafts", recipe.outcome.criticalBonusCrafts)
         yaml.set("outcome.byproduct.chance", recipe.outcome.byproductChance)
         recipe.outcome.byproduct?.let { writeItem(yaml, "outcome.byproduct.item", it) }
+        yaml.set("outcome.quality.name", recipe.outcome.quality.name)
+        yaml.set("outcome.quality.chance", recipe.outcome.quality.chance)
+        yaml.set("outcome.quality.lore", recipe.outcome.quality.lore)
 
         saveAtomic(file, yaml)
     }

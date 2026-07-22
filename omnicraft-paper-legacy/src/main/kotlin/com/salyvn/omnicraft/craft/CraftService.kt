@@ -217,9 +217,11 @@ class CraftService(
             val keptEnchantGroups = mutableListOf<List<ExtractedAdvancedEnchant>>()
             chargedMoney = quote.totalMoney
             val maximumOutcome = outcomes.maximum(recipe, crafts)
-            val maximumPrimaryOutput = outputStacks(recipe, maximumOutcome.outputCrafts, emptyList())
+            val maximumPrimaryOutput = outputStacks(recipe, maximumOutcome.outputCrafts - maximumOutcome.qualityCrafts, emptyList())
+            val maximumQualityOutput = qualityOutputStacks(recipe, maximumOutcome.qualityCrafts)
             val maximumByproducts = byproductStacks(recipe, maximumOutcome.byproducts)
-            val output = if (maximumPrimaryOutput == null || maximumByproducts == null) null else maximumPrimaryOutput + maximumByproducts
+            val output = if (maximumPrimaryOutput == null || maximumQualityOutput == null || maximumByproducts == null) null
+            else maximumPrimaryOutput + maximumQualityOutput + maximumByproducts
             val conservativeKeepSlots = 0
             val projectedStorage = player.inventory.storageContents.map { it?.clone() }.toTypedArray()
             plan.values.flatten().forEach { entry ->
@@ -274,9 +276,11 @@ class CraftService(
             moneyWithdrawn = true
 
             val outcome = outcomes.resolve(recipe, crafts, Random.nextLong())
-            val primaryOutput = outputStacks(recipe, outcome.outputCrafts, keptEnchantGroups)
+            val primaryOutput = outputStacks(recipe, outcome.outputCrafts - outcome.qualityCrafts, keptEnchantGroups)
+            val qualityOutput = qualityOutputStacks(recipe, outcome.qualityCrafts)
             val byproducts = byproductStacks(recipe, outcome.byproducts)
-            val enrichedOutput = if (primaryOutput == null || byproducts == null) null else primaryOutput + byproducts
+            val enrichedOutput = if (primaryOutput == null || qualityOutput == null || byproducts == null) null
+            else primaryOutput + qualityOutput + byproducts
             if (enrichedOutput == null) {
                 rollback(player, removed)
                 plugin.pendingRefunds.refundOrQueue(player, chargedMoney)
@@ -298,7 +302,7 @@ class CraftService(
             committed = true
             grantAuraSkillsXp(player, recipe, crafts)
             handleAdvancedEnchantExtraction(player, recipe, extractedEnchants)
-            audit.record(player, recipe, crafts, "success", "seed=${outcome.seed},critical=${outcome.criticalCrafts},byproduct=${outcome.byproducts}")
+            audit.record(player, recipe, crafts, "success", "seed=${outcome.seed},critical=${outcome.criticalCrafts},quality=${outcome.qualityCrafts},byproduct=${outcome.byproducts}")
             if (recipe.options.rareBroadcast && plugin.config.getBoolean("history.log-rare-recipes", true)) {
                 plugin.server.broadcast(Text.c(config.message("broadcast.rare-craft", "#ffd166{player} crafted {amount}x {item}.")
                     .replace("{player}", player.name)
@@ -334,6 +338,7 @@ class CraftService(
         deniedConditions = hooks.deniedConditions(player, recipe.requirements.papiConditions)
             .plus(missingHookFailures(recipe))
             .plus(auraSkillsFailures(player, recipe))
+            .plus(outcomeFailures(recipe))
             .plus(stations.failure(player, recipe)?.let(::listOf).orEmpty())
     )
 
@@ -359,6 +364,14 @@ class CraftService(
         val strict = plugin.config.getBoolean("advanced-enchantments.missing-hook-disables-ae-recipes", false)
         if (requiresAe && strict && !hooks.enabled("AdvancedEnchantments")) failures += "AdvancedEnchantments"
         return failures
+    }
+
+    private fun outcomeFailures(recipe: CraftRecipe): List<String> {
+        val quality = recipe.outcome.quality
+        if (!quality.name.isNullOrBlank() && recipe.extraction.enchant == ExtractionMode.KEEP) {
+            return listOf("quality cannot use enchant KEEP")
+        }
+        return emptyList()
     }
 
     private fun rollback(player: Player, removed: List<Pair<Int, ItemStack>>) {
@@ -441,6 +454,27 @@ class CraftService(
         while (remaining > 0) {
             val take = minOf(remaining, maxStack)
             stacks += ItemAdapter.tryFromCraftItem(byproduct, take) ?: return null
+            remaining -= take
+        }
+        return stacks
+    }
+
+    private fun qualityOutputStacks(recipe: CraftRecipe, crafts: Int): List<ItemStack>? {
+        if (crafts <= 0) return emptyList()
+        val quality = recipe.outcome.quality
+        if (quality.name.isNullOrBlank()) return null
+        var remaining = try {
+            Math.multiplyExact(recipe.output.amount, crafts)
+        } catch (_: ArithmeticException) {
+            return null
+        }
+        val base = ItemAdapter.tryFromCraftItem(recipe.output, 1) ?: return null
+        val maxStack = base.maxStackSize.coerceAtLeast(1)
+        val stacks = mutableListOf<ItemStack>()
+        while (remaining > 0) {
+            val take = minOf(remaining, maxStack)
+            val stack = ItemAdapter.tryFromCraftItem(recipe.output, take) ?: return null
+            stacks += ItemAdapter.applyQuality(stack, quality)
             remaining -= take
         }
         return stacks

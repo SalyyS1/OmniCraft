@@ -493,6 +493,9 @@ class MenuService(
             recipe.station.material?.let { lore += Text.c("#7cf5ff• Station: $it (r${recipe.station.radius})") }
             if (recipe.outcome.criticalChance > 0.0) lore += Text.c("#ffd166• Critical: ${recipe.outcome.criticalChance}% (+${recipe.outcome.criticalBonusCrafts} craft)")
             recipe.outcome.byproduct?.let { lore += Text.c("#d6f7ff• Byproduct: ${recipe.outcome.byproductChance}% ${it.mmoId ?: it.material}") }
+            recipe.outcome.quality.name?.takeIf { recipe.outcome.quality.chance > 0.0 }?.let {
+                lore += Text.c("#ffd166• Quality: ${recipe.outcome.quality.chance}% $it")
+            }
             lore += Text.c("#8ea3b0• Available crafts: ${check.craftableAmount}")
             lore += Text.c("#d6f7ff› Left click: craft x${recipe.craft.leftAmount}")
             lore += Text.c("#d6f7ff› Right click: craft x${recipe.craft.rightAmount}")
