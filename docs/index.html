@@ -14,7 +14,7 @@
   </header>
   <div class="shell">
     <aside class="sidebar"><nav>
-      <a href="#start">Bắt đầu</a><a href="#players">Người chơi</a><a href="#admins">Quản trị</a><a href="#recipe">Recipe</a><a href="#integrations">Tích hợp</a><a href="#safety">An toàn</a><a href="#support">Hỗ trợ</a>
+      <a href="#start">Bắt đầu</a><a href="#players">Người chơi</a><a href="#admins">Quản trị</a><a href="#recipe">Recipe</a><a href="#rpg">RPG</a><a href="#integrations">Tích hợp</a><a href="#safety">An toàn</a><a href="#support">Hỗ trợ</a>
     </nav></aside>
     <main id="top">
       <section class="hero canvas searchable">
@@ -85,7 +85,7 @@ outcome:
         <div class="callout">AutoCraft bật mặc định (có thể tắt bằng <code>features.auto-craft</code>): chỉ bật <code>auto-craft.enabled</code> cho recipe trung gian và dùng <code>/oc autocraft &lt;recipe&gt; [amount]</code>. Queue chạy khi online, ưu tiên inventory, chặn cycle/depth và hủy khi logout/reload. Sau restart, chỉ queue đang chờ mới được người chơi tự tiếp tục qua <code>/oc autocraft-resume</code>; craft đang commit không bao giờ bị phát lại.</div>
       </section>
 
-      <section class="canvas searchable"><h2>RPG progression nội bộ</h2><div class="grid two">
+      <section id="rpg" class="canvas searchable"><h2>RPG progression nội bộ</h2><div class="grid two">
         <article><h3>Station</h3><p>Block yêu cầu được kiểm tra trong bán kính <code>station.radius</code> quanh người chơi khi bắt đầu và trước commit. Rời trạm trong countdown hay AutoCraft sẽ fail an toàn, không tiêu node tiếp theo.</p></article>
         <article><h3>Catalyst</h3><p>Catalyst là vật phẩm bị tiêu mỗi craft. Nó đi qua cùng allocation planner với ingredient, vì thế một stack không thể bị tính hai lần.</p></article>
         <article><h3>Critical</h3><p><code>bonus-crafts</code> thêm số lần output cho mỗi craft critical. Chance được clamp 0–100 và kết quả có seed trong audit log.</p></article>
