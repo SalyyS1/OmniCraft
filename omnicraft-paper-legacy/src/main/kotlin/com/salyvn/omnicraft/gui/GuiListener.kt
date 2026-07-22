@@ -66,6 +66,16 @@ class GuiListener(
                 val recipe = plugin.configService.recipe(holder.categoryId ?: return, holder.recipeId ?: return) ?: return
                 when (event.slot) {
                     MenuService.OUTPUT_SLOT -> craft.craft(player, recipe, craftMode(event.click)) { menus.openRecipe(player, recipe) }
+                    47 -> {
+                        val amount = when {
+                            event.click.isShiftClick -> plugin.config.getInt("auto-craft.max-target-crafts", 64)
+                            event.click == ClickType.RIGHT -> recipe.craft.rightAmount
+                            else -> recipe.craft.leftAmount
+                        }
+                        val failure = plugin.craftQueueService.start(player, recipe, amount)
+                        if (failure == null) player.closeInventory()
+                        else player.sendMessage(Text.c("#ff6961AutoCraft unavailable: $failure"))
+                    }
                     49 -> menus.openCategory(player, recipe.categoryId)
                 }
             }
@@ -216,15 +226,19 @@ class GuiListener(
 
     @EventHandler
     fun onQuit(event: PlayerQuitEvent) {
-        craft.cancelPlayer(event.player.uniqueId)
+        plugin.craftQueueService.cancel(event.player.uniqueId, "cancelled on logout")
+        craft.cancelOnLogout(event.player.uniqueId)
+    }
+
+    @EventHandler
+    fun onJoin(event: org.bukkit.event.player.PlayerJoinEvent) {
+        plugin.pendingRefunds.retry(event.player)
     }
 
     @EventHandler
     fun onMove(event: PlayerMoveEvent) {
         if (event.from.blockX == event.to.blockX && event.from.blockY == event.to.blockY && event.from.blockZ == event.to.blockZ) return
-        if (plugin.config.getBoolean("craft-time.cancel-on-move", false)) {
-            craft.cancelPlayer(event.player.uniqueId)
-        }
+        craft.cancelOnMove(event.player.uniqueId)
     }
 
     private fun categorySlotIndex(slot: Int): Int {

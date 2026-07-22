@@ -5,6 +5,8 @@ import com.salyvn.omnicraft.config.ConfigService
 import com.salyvn.omnicraft.craft.AuditService
 import com.salyvn.omnicraft.craft.CraftService
 import com.salyvn.omnicraft.craft.UsageService
+import com.salyvn.omnicraft.craft.PendingRefundService
+import com.salyvn.omnicraft.craft.CraftQueueService
 import com.salyvn.omnicraft.gui.GuiListener
 import com.salyvn.omnicraft.gui.MenuService
 import com.salyvn.omnicraft.hook.HookService
@@ -26,6 +28,10 @@ open class OmniCraftPlugin : JavaPlugin() {
         private set
     lateinit var auditService: AuditService
         private set
+    lateinit var pendingRefunds: PendingRefundService
+        private set
+    lateinit var craftQueueService: CraftQueueService
+        private set
 
     override fun onEnable() {
         saveDefaultConfig()
@@ -39,7 +45,11 @@ open class OmniCraftPlugin : JavaPlugin() {
         usageService = UsageService(this)
         usageService.load()
         auditService = AuditService(this)
+        pendingRefunds = PendingRefundService(this, hooks)
+        pendingRefunds.load()
+        server.scheduler.runTaskTimer(this, Runnable { pendingRefunds.retryOnlinePlayers() }, 20L * 60, 20L * 60)
         craftService = CraftService(this, configService, hooks, usageService, auditService)
+        craftQueueService = CraftQueueService(this, configService, craftService)
         menuService = MenuService(configService, craftService, hooks)
 
         val command = OmniCraftCommand(this, configService, menuService, craftService)
@@ -57,10 +67,12 @@ open class OmniCraftPlugin : JavaPlugin() {
         if (::craftService.isInitialized) {
             craftService.shutdown()
         }
+        if (::craftQueueService.isInitialized) craftQueueService.shutdown()
         logger.info("OmniCraft disabled")
     }
 
     fun reloadAll() {
+        if (::craftQueueService.isInitialized) craftQueueService.cancelAll("cancelled on reload")
         reloadConfig()
         configService.reload()
     }
@@ -68,7 +80,7 @@ open class OmniCraftPlugin : JavaPlugin() {
     private fun logHookStatus() {
         val hooks = listOf(
             "MMOItems", "MythicLib", "AdvancedEnchantments", "Vault",
-            "PlaceholderAPI", "OmniGemStone", "OmniEnchants", "OmniTooltips",
+            "PlaceholderAPI", "AuraSkills", "OmniGemStone", "OmniEnchants", "OmniTooltips",
             "OmniMinMax", "OmniDelta", "OmniSet", "OmniLore", "OmniModifier",
             "OmniPopupPickup", "OmniTotalStats"
         )

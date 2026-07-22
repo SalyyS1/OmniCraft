@@ -9,6 +9,7 @@ import com.salyvn.omnicraft.core.CraftLimits
 import com.salyvn.omnicraft.core.CraftRecipe
 import com.salyvn.omnicraft.core.CraftRequirements
 import com.salyvn.omnicraft.core.CraftTime
+import com.salyvn.omnicraft.core.CraftQuantityScaling
 import com.salyvn.omnicraft.core.ExtractionMode
 import com.salyvn.omnicraft.core.ExtractionPolicy
 import com.salyvn.omnicraft.core.ItemMode
@@ -161,7 +162,12 @@ class ConfigService(private val plugin: OmniCraftPlugin) {
                 enabled = yaml.getBoolean("craft-time.enabled", plugin.config.getBoolean("craft-time.enabled", false)),
                 seconds = yaml.getInt("craft-time.seconds", plugin.config.getInt("craft-time.seconds", 0)),
                 cancelOnMove = yaml.getBoolean("craft-time.cancel-on-move", plugin.config.getBoolean("craft-time.cancel-on-move", false)),
-                cancelOnLogout = yaml.getBoolean("craft-time.cancel-on-logout", plugin.config.getBoolean("craft-time.cancel-on-logout", true))
+                cancelOnLogout = yaml.getBoolean("craft-time.cancel-on-logout", plugin.config.getBoolean("craft-time.cancel-on-logout", true)),
+                quantityScaling = runCatching {
+                    CraftQuantityScaling.valueOf(yaml.getString("craft-time.quantity-scaling", "LINEAR")!!.uppercase())
+                }.getOrDefault(CraftQuantityScaling.LINEAR),
+                minimumSeconds = yaml.getInt("craft-time.minimum-seconds", plugin.config.getInt("craft-time.minimum-seconds", 1)).coerceAtLeast(0),
+                maximumSeconds = yaml.getInt("craft-time.maximum-seconds", plugin.config.getInt("craft-time.maximum-seconds", 3600)).coerceAtLeast(0)
             ),
             extraction = ExtractionPolicy(
                 enchant = extractionMode(yaml.getString("extraction.enchant", "DESTROY")),
@@ -177,9 +183,12 @@ class ConfigService(private val plugin: OmniCraftPlugin) {
                 enabled = yaml.getBoolean("options.enabled", true),
                 hidden = yaml.getBoolean("options.hidden", false),
                 rareBroadcast = yaml.getBoolean("options.rare-broadcast", false),
-                sourceHints = yaml.getConfigurationSection("options.source-hints")?.getKeys(false)
+                sourceHints = (yaml.getConfigurationSection("options.source-hints")?.getKeys(false)
                     ?.associateWith { key -> yaml.getString("options.source-hints.$key", "") ?: "" }
-                    ?: emptyMap()
+                    ?: emptyMap()) + mapOf(
+                    "auto-craft.enabled" to yaml.getBoolean("auto-craft.enabled", false).toString(),
+                    "auto-craft.priority" to yaml.getInt("auto-craft.priority", 0).toString()
+                )
             )
         )
     }

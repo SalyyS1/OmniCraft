@@ -23,6 +23,17 @@ craft-time:
   cancel-on-logout: true
   reopen-menu: true
   title-each-second: true
+  quantity-scaling: LINEAR
+  minimum-seconds: 1
+  maximum-seconds: 3600
+
+fast-craft:
+  # Duration multipliers: lower is faster. Values are clamped to 0.05..10.0.
+  permission-tiers:
+    omnicraft.fastcraft.vip: 0.75
+    omnicraft.fastcraft.elite: 0.50
+  # Optional numeric PlaceholderAPI result, for example "%auraskills_power%" is not enabled by default.
+  placeholder-multiplier: ""
 
 anti-dupe:
   block-creative: true
@@ -82,3 +93,9 @@ features:
   batch-preview: true
   quick-repeat: true
   locked-recipes-visible: true
+  auto-craft: true
+
+auto-craft:
+  max-active-runs: 64
+  max-target-crafts: 64
+  dispatch-interval-ticks: 2

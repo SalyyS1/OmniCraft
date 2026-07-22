@@ -1,258 +1,93 @@
 <!doctype html>
-<html lang="en">
+<html lang="vi">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>OmniCraft Wiki</title>
+  <meta name="description" content="Tài liệu OmniCraft cho server Paper RPG/MMO.">
+  <title>OmniCraft · Wiki</title>
   <link rel="stylesheet" href="assets/wiki.css">
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="#overview">OmniCraft</a>
-    <div class="tools">
-      <input id="search" type="search" placeholder="Search wiki">
-      <button id="langToggle" type="button">VI</button>
-    </div>
+    <a class="brand" href="#top">✦ OmniCraft</a>
+    <div class="tools"><input id="search" type="search" placeholder="Tìm trong tài liệu"><a class="button" href="wiki/vi/overview.md">Markdown</a></div>
   </header>
-
   <div class="shell">
-    <aside class="sidebar">
-      <nav>
-        <a href="#overview">Overview</a>
-        <a href="#install">Installation</a>
-        <a href="#commands">Commands</a>
-        <a href="#player">Player Guide</a>
-        <a href="#admin">Admin GUI</a>
-        <a href="#config">Config</a>
-        <a href="#recipes">Recipes</a>
-        <a href="#integrations">Integrations</a>
-        <a href="#safety">Anti-dupe</a>
-        <a href="#examples">Examples</a>
-        <a href="#troubleshooting">Troubleshooting</a>
-        <a href="#faq">FAQ</a>
-        <a href="#changelog">Changelog</a>
-      </nav>
-    </aside>
-
-    <main>
-      <section id="overview" class="hero canvas searchable">
-        <span class="badge">Paper plugin</span>
-        <h1 data-en="OmniCraft Wiki" data-vi="Wiki OmniCraft">OmniCraft Wiki</h1>
-        <p data-en="OmniCraft is a crafting station plugin for RPG/MMO Paper servers. It focuses on MMOItems-style crafting, clear requirements, AdvancedEnchantments extraction, and strict server-side transaction safety." data-vi="OmniCraft là plugin trạm chế tạo cho server Paper RPG/MMO. Plugin tập trung vào giao diện giống MMOItems, yêu cầu rõ ràng, tách AdvancedEnchantments và xử lý craft an toàn phía server.">OmniCraft is a crafting station plugin for RPG/MMO Paper servers. It focuses on MMOItems-style crafting, clear requirements, AdvancedEnchantments extraction, and strict server-side transaction safety.</p>
-        <div class="grid three">
-          <article><strong>1.20 - 1.21.11</strong><span>Use `OmniCraft-legacy.jar` on Java 21.</span></article>
-          <article><strong>26.1.x</strong><span>Use `OmniCraft-26.jar` on Java 25.</span></article>
-          <article><strong>Author</strong><span>SalyVn</span></article>
-        </div>
+    <aside class="sidebar"><nav>
+      <a href="#start">Bắt đầu</a><a href="#players">Người chơi</a><a href="#admins">Quản trị</a><a href="#recipe">Recipe</a><a href="#integrations">Tích hợp</a><a href="#safety">An toàn</a><a href="#support">Hỗ trợ</a>
+    </nav></aside>
+    <main id="top">
+      <section class="hero canvas searchable">
+        <span class="badge">PAPER RPG CRAFTING</span>
+        <h1>Chế tạo RPG rõ ràng, nhanh và an toàn.</h1>
+        <p>Recipe Vanilla và MMOItems, batch crafting, craft time, giới hạn, Vault, PlaceholderAPI và giao dịch phía server ưu tiên chống dupe.</p>
+        <div class="grid three"><article><strong>Paper 1.20–1.21.11</strong><span>JAR legacy · Java 21</span></article><article><strong>Paper 26.1+</strong><span>JAR 26 · Java 25</span></article><article><strong>Soft dependencies</strong><span>MMOItems, MythicLib, Vault, PAPI, AE</span></article></div>
       </section>
 
-      <section id="install" class="canvas searchable">
-        <h2 data-en="Installation" data-vi="Cài đặt">Installation</h2>
-        <ol data-en-list="Download the jar that matches your server version.|Put the jar into the server plugins folder.|Start the server once to generate files.|Edit config.yml, messages.yml, and category recipe files.|Run /oc reload or restart the server." data-vi-list="Tải jar đúng với phiên bản server.|Đặt jar vào thư mục plugins của server.|Khởi động server một lần để tạo file.|Chỉnh config.yml, messages.yml và các file recipe trong category.|Chạy /oc reload hoặc restart server.">
-          <li>Download the jar that matches your server version.</li>
-          <li>Put the jar into the server plugins folder.</li>
-          <li>Start the server once to generate files.</li>
-          <li>Edit config.yml, messages.yml, and category recipe files.</li>
-          <li>Run /oc reload or restart the server.</li>
-        </ol>
-        <div class="callout info" data-en="Install MMOItems, MythicLib, AdvancedEnchantments, Vault, and PlaceholderAPI only when your recipes need those hooks. OmniCraft will still load without optional hooks." data-vi="Chỉ cần cài MMOItems, MythicLib, AdvancedEnchantments, Vault và PlaceholderAPI khi recipe của bạn dùng các hook đó. OmniCraft vẫn load khi thiếu hook tùy chọn.">Install MMOItems, MythicLib, AdvancedEnchantments, Vault, and PlaceholderAPI only when your recipes need those hooks. OmniCraft will still load without optional hooks.</div>
+      <section id="start" class="canvas searchable"><h2>Bắt đầu trong 5 phút</h2>
+        <ol><li>Cài đúng JAR cho phiên bản server và khởi động một lần.</li><li>Mở <code>plugins/OmniCraft/config.yml</code>, sau đó tạo recipe tại <code>category/&lt;id&gt;/</code>.</li><li>Chạy <code>/oc validate</code> để kiểm tra recipe.</li><li>Chạy <code>/oc reload</code> sau khi chỉnh file.</li></ol>
+        <div class="callout info">MMOItems, Vault, PlaceholderAPI và AdvancedEnchantments là tùy chọn. Thiếu hook không ngăn plugin khởi động; recipe cần hook đó sẽ bị từ chối an toàn.</div>
       </section>
 
-      <section id="commands" class="canvas searchable">
-        <h2 data-en="Commands And Permissions" data-vi="Lệnh và quyền">Commands And Permissions</h2>
-        <table>
-          <thead><tr><th>Command</th><th>Permission</th><th>Description</th></tr></thead>
-          <tbody>
-            <tr><td><code>/omnicraft</code>, <code>/oc</code>, <code>/ocraft</code>, <code>/craft</code></td><td><code>omnicraft.use</code></td><td data-en="Open main menu." data-vi="Mở menu chính.">Open main menu.</td></tr>
-            <tr><td><code>/oc open &lt;category&gt;</code></td><td><code>omnicraft.category.&lt;id&gt;</code> or <code>omnicraft.open.&lt;id&gt;</code></td><td data-en="Open one category directly." data-vi="Mở nhanh một category.">Open one category directly.</td></tr>
-            <tr><td><code>/oc browse</code></td><td><code>omnicraft.admin</code></td><td data-en="Open recipe browser and editor." data-vi="Mở trình duyệt và chỉnh recipe.">Open recipe browser and editor.</td></tr>
-            <tr><td><code>/oc settings</code></td><td><code>omnicraft.settings</code></td><td data-en="Edit global settings in game." data-vi="Chỉnh setting chung trong game.">Edit global settings in game.</td></tr>
-            <tr><td><code>/oc reload</code></td><td><code>omnicraft.reload</code></td><td data-en="Reload plugin files." data-vi="Reload file plugin.">Reload plugin files.</td></tr>
-            <tr><td><code>/oc validate</code></td><td><code>omnicraft.validate</code></td><td data-en="Check recipes and hooks." data-vi="Kiểm tra recipe và hook.">Check recipes and hooks.</td></tr>
-            <tr><td><code>/oc debug recipe &lt;id&gt;</code></td><td><code>omnicraft.debug</code></td><td data-en="Dry-run one recipe without crafting." data-vi="Test recipe mà không craft thật.">Dry-run one recipe without crafting.</td></tr>
-            <tr><td><code>/oc export &lt;category&gt;</code></td><td><code>omnicraft.admin</code></td><td data-en="Export category zip." data-vi="Xuất category thành zip.">Export category zip.</td></tr>
-            <tr><td><code>/oc import &lt;category&gt; &lt;file.zip&gt;</code></td><td><code>omnicraft.admin</code></td><td data-en="Import category zip from exports." data-vi="Nhập category zip từ thư mục exports.">Import category zip from exports.</td></tr>
-          </tbody>
-        </table>
-      </section>
+      <section id="players" class="canvas searchable"><h2>Hướng dẫn người chơi</h2><div class="grid two">
+        <article><h3>Mở và chọn recipe</h3><p>Dùng <code>/oc</code>, chọn category và recipe. Menu có lọc recipe craft được, favorites và tìm kiếm.</p></article>
+        <article><h3>Thao tác craft</h3><p>Chuột trái: số lượng thường. Chuột phải: batch. Shift: tối đa theo inventory và hard-cap.</p></article>
+        <article><h3>Craft có thời gian</h3><p>Fast Craft nhận modifier theo permission hoặc PlaceholderAPI. Điều kiện được kiểm tra lại trước khi tiêu nguyên liệu.</p></article>
+        <article><h3>Giới hạn</h3><p>Recipe có thể giới hạn ngày/tuần; quota được reserve và trả lại khi giao dịch rollback.</p></article>
+      </div></section>
 
-      <section id="player" class="canvas searchable">
-        <h2 data-en="Player Crafting Guide" data-vi="Hướng dẫn người chơi">Player Crafting Guide</h2>
-        <div class="grid two">
-          <article><h3>Menus</h3><p data-en="Players open the main menu, choose a category, then click a recipe. Category filters include craftable-only, favorites, and search." data-vi="Người chơi mở menu chính, chọn category rồi chọn recipe. Category có lọc craftable-only, favorites và search.">Players open the main menu, choose a category, then click a recipe. Category filters include craftable-only, favorites, and search.</p></article>
-          <article><h3>Craft Clicks</h3><p data-en="Craft by clicking the product preview: left for the normal amount, right for batch amount, shift for max amount from inventory." data-vi="Craft bằng cách click vào item thành phẩm: chuột trái craft số mặc định, chuột phải craft theo batch, shift craft tối đa theo nguyên liệu.">Craft by clicking the product preview: left for the normal amount, right for batch amount, shift for max amount from inventory.</p></article>
-        </div>
-        <div class="callout success" data-en="Ingredient previews keep the original name and lore. OmniCraft only adds one requirement line and disables italic display." data-vi="Preview nguyên liệu giữ nguyên tên và lore gốc. OmniCraft chỉ thêm một dòng yêu cầu và tắt chữ nghiêng.">Ingredient previews keep the original name and lore. OmniCraft only adds one requirement line and disables italic display.</div>
-      </section>
+      <section id="admins" class="canvas searchable"><h2>Quản trị và lệnh</h2><table><thead><tr><th>Lệnh</th><th>Quyền</th><th>Mục đích</th></tr></thead><tbody>
+        <tr><td><code>/oc</code></td><td><code>omnicraft.use</code></td><td>Mở menu.</td></tr>
+        <tr><td><code>/oc open &lt;category&gt;</code></td><td>category hoặc open.&lt;id&gt;</td><td>Mở category trực tiếp.</td></tr>
+        <tr><td><code>/oc browse</code></td><td><code>omnicraft.admin</code></td><td>Tạo và sửa recipe bằng GUI.</td></tr>
+        <tr><td><code>/oc validate</code></td><td><code>omnicraft.validate</code></td><td>Kiểm tra config/recipe.</td></tr>
+        <tr><td><code>/oc debug recipe &lt;id&gt;</code></td><td><code>omnicraft.debug</code></td><td>Dry-run, không tiêu nguyên liệu.</td></tr>
+        <tr><td><code>/oc autocraft &lt;recipe&gt; [amount]</code></td><td><code>omnicraft.auto-craft</code></td><td>Chạy queue AutoCraft online.</td></tr>
+        <tr><td><code>/oc autocraft-cancel</code></td><td><code>omnicraft.auto-craft</code></td><td>Hủy queue hiện tại.</td></tr>
+        <tr><td><code>/oc autocraft-status</code></td><td><code>omnicraft.auto-craft</code></td><td>Xem node còn lại và trạng thái hiện tại.</td></tr>
+        <tr><td><code>/oc reload</code></td><td><code>omnicraft.reload</code></td><td>Đọc lại file.</td></tr>
+      </tbody></table></section>
 
-      <section id="admin" class="canvas searchable">
-        <h2 data-en="Admin GUI Guide" data-vi="Hướng dẫn GUI admin">Admin GUI Guide</h2>
-        <div class="steps">
-          <p data-en="Use /oc browse to open categories. Recipes are shown from left to right. The next empty slot is a green create button. Click it to browse Vanilla or MMOItems outputs, or place an item from your cursor." data-vi="Dùng /oc browse để mở category. Recipe hiện từ trái sang phải. Ô trống kế tiếp là nút xanh để tạo recipe. Click để chọn output Vanilla/MMOItems hoặc đặt item từ cursor.">Use /oc browse to open categories. Recipes are shown from left to right. The next empty slot is a green create button. Click it to browse Vanilla or MMOItems outputs, or place an item from your cursor.</p>
-          <p data-en="In the editor, the ingredient grid is 4x4. Empty green slots add ingredients. Left click an ingredient to add 1, right click to remove 1, shift-left to add 16, shift-right to remove the ingredient." data-vi="Trong editor, nguyên liệu là grid 4x4. Ô xanh trống dùng để thêm nguyên liệu. Chuột trái +1, chuột phải -1, shift trái +16, shift phải xóa nguyên liệu.">In the editor, the ingredient grid is 4x4. Empty green slots add ingredients. Left click an ingredient to add 1, right click to remove 1, shift-left to add 16, shift-right to remove the ingredient.</p>
-          <p data-en="Click the output preview to replace the product. Toggle enabled, craft time, and AdvancedEnchantments extraction from the bottom row." data-vi="Click item thành phẩm để đổi output. Hàng dưới dùng để bật/tắt recipe, craft time và chế độ tách AdvancedEnchantments.">Click the output preview to replace the product. Toggle enabled, craft time, and AdvancedEnchantments extraction from the bottom row.</p>
-        </div>
-      </section>
-
-      <section id="config" class="canvas searchable">
-        <h2 data-en="Config Guide" data-vi="Hướng dẫn config">Config Guide</h2>
-        <p data-en="OmniCraft uses three main file groups: config.yml for global behavior, messages.yml for all visible text, and category/&lt;id&gt;/&lt;recipe&gt;.yml for recipes." data-vi="OmniCraft dùng ba nhóm file chính: config.yml cho hành vi chung, messages.yml cho toàn bộ text hiển thị, và category/&lt;id&gt;/&lt;recipe&gt;.yml cho recipe.">OmniCraft uses three main file groups: config.yml for global behavior, messages.yml for all visible text, and category/&lt;id&gt;/&lt;recipe&gt;.yml for recipes.</p>
-        <pre><code>plugins/OmniCraft/
-  config.yml
-  messages.yml
-  category/
-    weapons/
-      steel_sword.yml
-  data/
-    favorites.yml
-  logs/
-    craft-history.log</code></pre>
-        <div class="grid two">
-          <article><strong>Hex color</strong><span>Use strings like <code>#7cf5ffText</code>. Item display is non-italic by default.</span></article>
-          <article><strong>messages.yml</strong><span>Legacy typo fallback is supported if the file already exists.</span></article>
-        </div>
-      </section>
-
-      <section id="recipes" class="canvas searchable">
-        <h2 data-en="Recipe YAML Guide" data-vi="Hướng dẫn YAML recipe">Recipe YAML Guide</h2>
-        <table>
-          <thead><tr><th>Field</th><th>Use</th></tr></thead>
-          <tbody>
-            <tr><td><code>output</code></td><td>Crafted item. Supports <code>VANILLA</code> and <code>MMOITEMS</code>.</td></tr>
-            <tr><td><code>ingredients</code></td><td>Required materials. Matching prefers UID/custom data, then MMOItems type/id, then material.</td></tr>
-            <tr><td><code>requirements</code></td><td>Permission, level, money, and PlaceholderAPI conditions.</td></tr>
-            <tr><td><code>craft</code></td><td>Click amounts, hard cap, and cooldown.</td></tr>
-            <tr><td><code>craft-time</code></td><td>Optional title countdown before final validation.</td></tr>
-            <tr><td><code>extraction</code></td><td>AdvancedEnchantments keep, destroy, or extract behavior.</td></tr>
-            <tr><td><code>limits</code></td><td>Daily and weekly per-player limits.</td></tr>
-            <tr><td><code>options</code></td><td>Enabled state, hidden state, rare broadcast, and source hints.</td></tr>
-          </tbody>
-        </table>
-      </section>
-
-      <section id="integrations" class="canvas searchable">
-        <h2 data-en="Integrations" data-vi="Tích hợp">Integrations</h2>
-        <div class="grid two">
-          <article><h3>MMOItems</h3><p data-en="Outputs and ingredients can use MMOItems type/id. If an MMOItems output cannot be resolved, the recipe fails instead of crafting a vanilla fallback." data-vi="Output và nguyên liệu có thể dùng MMOItems type/id. Nếu output MMOItems không resolve được, recipe fail thay vì craft nhầm item vanilla.">Outputs and ingredients can use MMOItems type/id. If an MMOItems output cannot be resolved, the recipe fails instead of crafting a vanilla fallback.</p></article>
-          <article><h3>AdvancedEnchantments</h3><p data-en="OmniCraft can apply AE enchants to outputs and handle AE enchants on consumed upgrade ingredients with KEEP, DESTROY, or EXTRACT." data-vi="OmniCraft có thể áp enchant AE vào output và xử lý enchant AE trên nguyên liệu nâng cấp bằng KEEP, DESTROY hoặc EXTRACT.">OmniCraft can apply AE enchants to outputs and handle AE enchants on consumed upgrade ingredients with KEEP, DESTROY, or EXTRACT.</p></article>
-          <article><h3>Vault</h3><p data-en="Money requirements are checked and charged through Vault when installed." data-vi="Yêu cầu tiền được check và trừ qua Vault khi có cài Vault.">Money requirements are checked and charged through Vault when installed.</p></article>
-          <article><h3>PlaceholderAPI</h3><p data-en="Conditions can compare placeholder output to required text." data-vi="Condition có thể so sánh output của placeholder với text yêu cầu.">Conditions can compare placeholder output to required text.</p></article>
-        </div>
-      </section>
-
-      <section id="safety" class="canvas searchable">
-        <h2 data-en="Anti-dupe And Safety" data-vi="Chống dupe và an toàn">Anti-dupe And Safety</h2>
-        <ul data-en-list="All GUI clicks are cancelled before OmniCraft handles registered slots.|Crafting scans the real server-side player inventory, never preview items or cursor items.|Each player and recipe is locked during processing.|Countdown crafts re-check requirements after the timer ends.|Bulk craft uses an immutable snapshot and a hard cap.|Rollback is attempted when output delivery fails.|Drag, number key, offhand swap, drop key, double-click collect, and creative clone actions are blocked in player GUIs." data-vi-list="Tất cả click GUI được cancel trước khi OmniCraft xử lý slot đã đăng ký.|Craft scan inventory thật phía server của player, không dùng item preview hay cursor.|Mỗi player và recipe được lock trong lúc xử lý.|Craft có đếm ngược sẽ kiểm tra lại yêu cầu sau khi timer kết thúc.|Bulk craft dùng snapshot bất biến và hard cap.|Rollback được thử khi giao output thất bại.|Drag, phím số, đổi offhand, phím drop, double-click collect và creative clone đều bị chặn trong GUI player.">
-          <li>All GUI clicks are cancelled before OmniCraft handles registered slots.</li>
-          <li>Crafting scans the real server-side player inventory, never preview items or cursor items.</li>
-          <li>Each player and recipe is locked during processing.</li>
-          <li>Countdown crafts re-check requirements after the timer ends.</li>
-          <li>Bulk craft uses an immutable snapshot and a hard cap.</li>
-          <li>Rollback is attempted when output delivery fails.</li>
-          <li>Drag, number key, offhand swap, drop key, double-click collect, and creative clone actions are blocked in player GUIs.</li>
-        </ul>
-      </section>
-
-      <section id="examples" class="canvas searchable">
-        <h2 data-en="Config Examples" data-vi="Ví dụ config">Config Examples</h2>
-        <h3>Main menu</h3>
-        <pre><code>main-menu:
-  title: "#7cf5ffOmniCraft"
-  size: 54
-  categories:
-    - id: weapons
-      title: "Weapons"
-      icon: DIAMOND_SWORD
-      slot: 10
-      permission: "omnicraft.category.weapons"
-      conditions: []
-      entry-cost: 0.0</code></pre>
-        <h3>Vanilla recipe</h3>
-        <pre><code>id: steel_sword
+      <section id="recipe" class="canvas searchable"><h2>Recipe YAML</h2><pre><code>id: steel_sword
 display:
   name: "#7cf5ffSteel Sword"
 output:
   mode: VANILLA
   material: IRON_SWORD
   amount: 1
-  uid: steel_sword
-  name: "#7cf5ffSteel Sword"
 ingredients:
   iron:
     amount: 24
-    item:
-      mode: VANILLA
-      material: IRON_INGOT
-      amount: 1
-requirements:
-  permission: "omnicraft.recipe.steel_sword"
-  level: 5
-  money: 250.0
-  conditions:
-    - placeholder: "%player_world%"
-      equals: "world"</code></pre>
-        <h3>MMOItems recipe</h3>
-        <pre><code>output:
-  mode: MMOITEMS
-  type: SWORD
-  id: STEEL_BLADE
-  amount: 1
-ingredients:
-  blade_core:
-    amount: 1
-    item:
-      mode: MMOITEMS
-      type: MATERIAL
-      id: BLADE_CORE
-      amount: 1</code></pre>
-        <h3>Craft time countdown</h3>
-        <pre><code>craft-time:
+    item: { mode: VANILLA, material: IRON_INGOT, amount: 1 }
+requirements: { level: 5, money: 250.0 }
+craft-time:
   enabled: true
   seconds: 5
-  cancel-on-move: false
-  cancel-on-logout: true</code></pre>
-        <h3>AdvancedEnchantments extraction</h3>
-        <pre><code>extraction:
-  enchant: EXTRACT
-  gemstone: DESTROY
-  level: DESTROY
-  success-rate: 1.0
-
-advanced-enchantments:
-  extraction:
-    extract-rate: 100.0
-    fixed-success-rate: 50.0
-    fixed-destroy-rate: 0.0
-    tier-rates:
-      COMMON: 70.0
-      RARE: 55.0
-      LEGENDARY: 35.0</code></pre>
+  quantity-scaling: LINEAR
+  minimum-seconds: 1
+  maximum-seconds: 3600
+limits: { daily: -1, weekly: -1 }
+auto-craft: { enabled: false, priority: 0 }</code></pre>
+        <div class="callout">AutoCraft bật mặc định (có thể tắt bằng <code>features.auto-craft</code>): chỉ bật <code>auto-craft.enabled</code> cho recipe trung gian và dùng <code>/oc autocraft &lt;recipe&gt; [amount]</code>. Queue chạy khi online, ưu tiên inventory, chặn cycle/depth và hủy khi logout/reload.</div>
       </section>
 
-      <section id="troubleshooting" class="canvas searchable">
-        <h2 data-en="Troubleshooting" data-vi="Xử lý lỗi">Troubleshooting</h2>
-        <div class="grid two">
-          <article><strong>Recipe does not craft</strong><span>Run <code>/oc validate</code>, check permission, level, money, hooks, and missing materials.</span></article>
-          <article><strong>MMOItems item missing</strong><span>Confirm type/id spelling, reload MMOItems, then run <code>/oc reload</code>.</span></article>
-          <article><strong>AE enchants disappear</strong><span>Set <code>extraction.enchant</code> to <code>KEEP</code> or <code>EXTRACT</code> for upgrade recipes.</span></article>
-          <article><strong>Players spam craft</strong><span>Increase <code>craft.cooldown-ms</code>, lower hard caps, and keep anti-dupe actions enabled.</span></article>
-        </div>
-      </section>
+      <section id="integrations" class="canvas searchable"><h2>Tích hợp</h2><div class="grid two">
+        <article><h3>MMOItems / MythicLib</h3><p>Dùng <code>mode: MMOITEMS</code> với <code>type</code> và <code>id</code>. Không resolve được output sẽ fail an toàn, không rơi về item Vanilla.</p></article>
+        <article><h3>Vault / PlaceholderAPI</h3><p>Vault xử lý tiền; PlaceholderAPI dùng điều kiện và speed multiplier. Giá trị speed bất thường được clamp.</p></article>
+        <article><h3>AdvancedEnchantments</h3><p>Chế độ KEEP, DESTROY hoặc EXTRACT cho enchant trên nguyên liệu nâng cấp.</p></article>
+        <article><h3>AuraSkills</h3><p>Chưa có adapter runtime public; không cần cài để OmniCraft hoạt động.</p></article>
+      </div></section>
 
-      <section id="faq" class="canvas searchable">
-        <h2>FAQ</h2>
-        <details open><summary>Can members use /oc open?</summary><p data-en="Yes. They still need the category permission or omnicraft.open.&lt;category&gt;." data-vi="Có. Người chơi vẫn cần quyền category hoặc omnicraft.open.&lt;category&gt;.">Yes. They still need the category permission or omnicraft.open.&lt;category&gt;.</p></details>
-        <details><summary>Can stack previews show more than 64?</summary><p data-en="Yes. Requirement previews keep the required amount visible even when the amount is above the normal stack cap." data-vi="Có. Preview yêu cầu vẫn hiện số lượng cần kể cả khi vượt giới hạn stack bình thường.">Yes. Requirement previews keep the required amount visible even when the amount is above the normal stack cap.</p></details>
-        <details><summary>Can I edit all text?</summary><p data-en="Most GUI labels, lore lines, warnings, titles, errors, and success messages are in messages.yml." data-vi="Hầu hết label GUI, lore, cảnh báo, title, lỗi và thông báo thành công đều nằm trong messages.yml.">Most GUI labels, lore lines, warnings, titles, errors, and success messages are in messages.yml.</p></details>
-      </section>
+      <section id="safety" class="canvas searchable"><h2>An toàn chống dupe</h2><ul><li>Phân bổ ingredient không dùng trùng slot inventory.</li><li>Revalidate item, số lượng, key và risk ngay trước mutation.</li><li>Thiếu chỗ output sẽ hoàn inventory snapshot và refund tiền.</li><li>Mỗi người chơi chỉ có một craft job; thời gian dùng monotonic clock.</li><li>Refund Vault lỗi được lưu bền vững và thử lại khi người chơi online.</li></ul></section>
 
-      <section id="changelog" class="canvas searchable">
-        <h2>Changelog</h2>
-        <p><strong>v1</strong> <span data-en="Craft GUI, admin editor, MMOItems, AdvancedEnchantments extraction, anti-dupe transaction safety, import/export, validation, and bilingual wiki." data-vi="Craft GUI, editor admin, MMOItems, tách AdvancedEnchantments, chống dupe transaction, import/export, validate và wiki song ngữ.">Craft GUI, admin editor, MMOItems, AdvancedEnchantments extraction, anti-dupe transaction safety, import/export, validation, and bilingual wiki.</span></p>
-      </section>
+      <section id="support" class="canvas searchable"><h2>Khắc phục lỗi</h2><div class="grid two">
+        <article><strong>Recipe không craft</strong><span>Chạy <code>/oc validate</code>; kiểm tra permission, level, tiền, hook và nguyên liệu.</span></article>
+        <article><strong>MMOItems thiếu item</strong><span>Kiểm tra type/id, reload MMOItems rồi <code>/oc reload</code>.</span></article>
+        <article><strong>Inventory đầy</strong><span>Giải phóng chỗ; OmniCraft hủy giao dịch an toàn thay vì drop/dupe output.</span></article>
+        <article><strong>AE bị mất</strong><span>Chọn <code>KEEP</code> hoặc <code>EXTRACT</code> cho recipe upgrade.</span></article>
+      </div></section>
     </main>
   </div>
-
   <script src="assets/wiki.js"></script>
 </body>
 </html>

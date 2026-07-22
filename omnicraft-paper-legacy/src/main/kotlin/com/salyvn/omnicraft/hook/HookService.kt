@@ -92,7 +92,9 @@ class HookService(private val plugin: JavaPlugin) {
             .getOrDefault(0.0)
     }
 
-    fun withdraw(player: Player, amount: Double): Boolean {
+    fun withdraw(player: Player, amount: Double): Boolean = withdrawResult(player, amount)
+
+    fun withdrawResult(player: Player, amount: Double): Boolean {
         if (amount <= 0.0) return true
         val economy = economyProvider() ?: return false
         return runCatching {
@@ -102,18 +104,28 @@ class HookService(private val plugin: JavaPlugin) {
         }.getOrDefault(false)
     }
 
-    fun deposit(player: Player, amount: Double) {
-        if (amount <= 0.0) return
-        val economy = economyProvider() ?: return
-        runCatching {
-            economy.javaClass.getMethod("depositPlayer", org.bukkit.OfflinePlayer::class.java, Double::class.javaPrimitiveType)
+    fun deposit(player: Player, amount: Double): Boolean {
+        if (amount <= 0.0) return true
+        val economy = economyProvider() ?: return false
+        return runCatching {
+            val response = economy.javaClass.getMethod("depositPlayer", org.bukkit.OfflinePlayer::class.java, Double::class.javaPrimitiveType)
                 .invoke(economy, player, amount)
-        }
+            response.javaClass.getMethod("transactionSuccess").invoke(response) as Boolean
+        }.getOrDefault(false)
     }
 
     fun deniedConditions(player: Player, conditions: List<String>): List<String> {
         if (conditions.isEmpty()) return emptyList()
         return conditions.filterNot { evaluateCondition(player, it) }
+    }
+
+    fun resolvePlaceholders(player: Player, value: String): String {
+        if (!enabled("PlaceholderAPI")) return value
+        return runCatching {
+            Class.forName("me.clip.placeholderapi.PlaceholderAPI")
+                .getMethod("setPlaceholders", Player::class.java, String::class.java)
+                .invoke(null, player, value) as String
+        }.getOrDefault(value)
     }
 
     fun enabled(name: String): Boolean {
@@ -156,15 +168,7 @@ class HookService(private val plugin: JavaPlugin) {
     }
 
     private fun evaluateCondition(player: Player, raw: String): Boolean {
-        val parsed = if (enabled("PlaceholderAPI")) {
-            runCatching {
-                Class.forName("me.clip.placeholderapi.PlaceholderAPI")
-                    .getMethod("setPlaceholders", Player::class.java, String::class.java)
-                    .invoke(null, player, raw) as String
-            }.getOrDefault(raw)
-        } else {
-            raw
-        }
+        val parsed = resolvePlaceholders(player, raw)
         val trimmed = parsed.trim()
         if (trimmed.equals("true", true) || trimmed.equals("yes", true) || trimmed == "1") return true
         if (trimmed.equals("false", true) || trimmed.equals("no", true) || trimmed == "0") return false

@@ -1,6 +1,7 @@
 package com.salyvn.omnicraft.craft
 
 import com.salyvn.omnicraft.core.CraftRecipe
+import com.salyvn.omnicraft.config.AtomicYamlFile
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
@@ -19,17 +20,37 @@ class UsageService(private val plugin: JavaPlugin) {
     }
 
     fun allowed(player: Player, recipe: CraftRecipe, amount: Int): Boolean {
+        return allowed(player, recipe, amount, "daily.${LocalDate.now()}", "weekly.${weekKey()}")
+    }
+
+    private fun allowed(player: Player, recipe: CraftRecipe, amount: Int, dailyBucket: String, weeklyBucket: String): Boolean {
         val daily = recipe.limits.daily
         val weekly = recipe.limits.weekly
-        if (daily >= 0 && count(player, recipe, "daily.${LocalDate.now()}") + amount > daily) return false
-        if (weekly >= 0 && count(player, recipe, "weekly.${weekKey()}") + amount > weekly) return false
+        if (daily >= 0 && count(player, recipe, dailyBucket) + amount > daily) return false
+        if (weekly >= 0 && count(player, recipe, weeklyBucket) + amount > weekly) return false
         return true
     }
 
-    fun record(player: Player, recipe: CraftRecipe, amount: Int) {
-        add(player, recipe, "daily.${LocalDate.now()}", amount)
-        add(player, recipe, "weekly.${weekKey()}", amount)
-        yaml.save(file)
+    data class Reservation(val playerId: String, val categoryId: String, val recipeId: String, val dailyBucket: String, val weeklyBucket: String, val amount: Int)
+
+    fun reserve(player: Player, recipe: CraftRecipe, amount: Int): Reservation? {
+        val dailyBucket = "daily.${LocalDate.now()}"
+        val weeklyBucket = "weekly.${weekKey()}"
+        if (amount <= 0 || !allowed(player, recipe, amount, dailyBucket, weeklyBucket)) return null
+        val reservation = Reservation(player.uniqueId.toString(), recipe.categoryId, recipe.id, dailyBucket, weeklyBucket, amount)
+        add(reservation, amount)
+        return try {
+            AtomicYamlFile.save(file, yaml)
+            reservation
+        } catch (_: Exception) {
+            add(reservation, -amount)
+            null
+        }
+    }
+
+    fun release(reservation: Reservation) {
+        add(reservation, -reservation.amount)
+        runCatching { AtomicYamlFile.save(file, yaml) }
     }
 
     private fun count(player: Player, recipe: CraftRecipe, bucket: String): Int {
@@ -39,6 +60,12 @@ class UsageService(private val plugin: JavaPlugin) {
     private fun add(player: Player, recipe: CraftRecipe, bucket: String, amount: Int) {
         val path = path(player, recipe, bucket)
         yaml.set(path, yaml.getInt(path, 0) + amount)
+    }
+
+    private fun add(reservation: Reservation, amount: Int) {
+        val base = "players.${reservation.playerId}.${reservation.categoryId}.${reservation.recipeId}"
+        yaml.set("$base.${reservation.dailyBucket}", yaml.getInt("$base.${reservation.dailyBucket}", 0) + amount)
+        yaml.set("$base.${reservation.weeklyBucket}", yaml.getInt("$base.${reservation.weeklyBucket}", 0) + amount)
     }
 
     private fun path(player: Player, recipe: CraftRecipe, bucket: String): String {

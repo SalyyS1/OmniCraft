@@ -81,6 +81,27 @@ class OmniCraftCommand(
                 }
                 menus.search(player, category, query)
             }
+            "autocraft" -> {
+                if (player == null) return true
+                val recipe = config.recipe(args.getOrNull(1) ?: "")
+                val amount = args.getOrNull(2)?.toIntOrNull() ?: 1
+                if (recipe == null) {
+                    player.sendMessage(Text.c("#ff6961Usage: /$label autocraft <recipe> [amount]"))
+                    return true
+                }
+                val failure = plugin.craftQueueService.start(player, recipe, amount)
+                if (failure != null) player.sendMessage(Text.c("#ff6961AutoCraft unavailable: $failure"))
+            }
+            "autocraft-cancel" -> {
+                if (player == null) return true
+                plugin.craftQueueService.cancel(player.uniqueId)
+            }
+            "autocraft-status" -> {
+                if (player == null) return true
+                val status = plugin.craftQueueService.status(player.uniqueId)
+                if (status == null) player.sendMessage(Text.c("#8ea3b0No active AutoCraft queue."))
+                else player.sendMessage(Text.c("#7cf5ffAutoCraft ${status.target}: ${status.pendingCrafts} node craft(s) pending${if (status.committing) " (committing)" else ""}."))
+            }
             "reload" -> {
                 if (!sender.hasPermission("omnicraft.reload")) {
                     sender.sendMessage(Text.c(config.message("errors.no-permission", "#ff6961No permission.")))
@@ -156,8 +177,10 @@ class OmniCraftCommand(
 
     override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): List<String> {
         return when (args.size) {
-            1 -> listOf("open", "settings", "browse", "search", "reload", "debug", "validate", "export", "import").filter { it.startsWith(args[0], true) }
-            2 -> if (args[0].equals("open", true) || args[0].equals("export", true) || args[0].equals("import", true) || args[0].equals("search", true)) {
+            1 -> listOf("open", "settings", "browse", "search", "autocraft", "autocraft-cancel", "autocraft-status", "reload", "debug", "validate", "export", "import").filter { it.startsWith(args[0], true) }
+            2 -> if (args[0].equals("autocraft", true)) {
+                config.categories.flatMap { category -> category.recipes.map { "${category.id}:${it.id}" } }.filter { it.startsWith(args[1], true) }
+            } else if (args[0].equals("open", true) || args[0].equals("export", true) || args[0].equals("import", true) || args[0].equals("search", true)) {
                 config.categories.map { it.id }.filter { it.startsWith(args[1], true) }
             } else emptyList()
             else -> emptyList()

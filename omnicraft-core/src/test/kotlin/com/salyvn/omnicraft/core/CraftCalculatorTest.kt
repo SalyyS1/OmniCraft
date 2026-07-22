@@ -4,6 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlin.test.assertIs
 
 class CraftCalculatorTest {
     private val calculator = CraftCalculator()
@@ -66,8 +67,45 @@ class CraftCalculatorTest {
     fun `selection prefers lower risk base items`() {
         val risky = InventoryEntry(0, ItemKey(ItemMode.VANILLA, "IRON_INGOT"), 24, ItemRisk(enchantCount = 2, gemstoneCount = 1))
         val clean = InventoryEntry(1, ItemKey(ItemMode.VANILLA, "IRON_INGOT"), 24)
-        val plan = calculator.selectionPlan(recipe.copy(requirements = CraftRequirements()), listOf(risky, clean), 1)
+        val plan = calculator.selectionPlan(
+            recipe.copy(requirements = CraftRequirements()),
+            listOf(risky, clean, InventoryEntry(2, ItemKey(ItemMode.VANILLA, "STICK"), 4)),
+            1
+        )
 
         assertEquals(1, plan["iron"]?.first()?.slot)
+    }
+
+    @Test
+    fun `allocation never spends the same slot twice`() {
+        val plank = CraftItem(ItemMode.VANILLA, "OAK_PLANKS", 1)
+        val overlappingRecipe = recipe.copy(
+            ingredients = listOf(CraftIngredient("first", plank, 3), CraftIngredient("second", plank, 3)),
+            requirements = CraftRequirements()
+        )
+        val inventory = listOf(InventoryEntry(2, ItemKey(ItemMode.VANILLA, "OAK_PLANKS"), 5))
+
+        assertEquals(0, calculator.check(overlappingRecipe, inventory, true, 0, 0.0, emptyList()).craftableAmount)
+        assertTrue(calculator.selectionPlan(overlappingRecipe, inventory, 1).isEmpty())
+    }
+
+    @Test
+    fun `money cap limits bulk quote and invalid quantities fail closed`() {
+        val cheapRecipe = recipe.copy(requirements = CraftRequirements(money = 10.0))
+        val inventory = listOf(
+            InventoryEntry(0, ItemKey(ItemMode.VANILLA, "IRON_INGOT"), 240),
+            InventoryEntry(1, ItemKey(ItemMode.VANILLA, "STICK"), 40)
+        )
+
+        assertEquals(2, calculator.check(cheapRecipe, inventory, true, 0, 25.0, emptyList()).craftableAmount)
+        assertEquals(2, calculator.quote(cheapRecipe, inventory, 10, 25.0).allowedCrafts)
+        assertEquals(CraftQuoteFailure.INVALID_QUANTITY, calculator.quote(cheapRecipe, inventory, 0, 25.0).failure)
+    }
+
+    @Test
+    fun `invalid ingredient amount is rejected without overflow`() {
+        val invalid = recipe.copy(ingredients = listOf(CraftIngredient("iron", recipe.ingredients.first().item, 0)))
+        assertEquals(0, calculator.check(invalid, emptyList(), true, 0, 0.0, emptyList()).craftableAmount)
+        assertIs<CraftAllocationResult.InvalidQuantity>(CraftAllocationPlanner().allocate(invalid, emptyList(), 1))
     }
 }

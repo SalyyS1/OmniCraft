@@ -52,6 +52,18 @@ input, button {
   padding: 8px 10px;
 }
 button { cursor: pointer; font-weight: 700; }
+.button {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.button:hover { border-color: var(--cyan); color: var(--cyan); }
 
 .shell {
   display: grid;

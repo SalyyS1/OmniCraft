@@ -9,7 +9,7 @@ dependencies {
     implementation(project(":omnicraft-core"))
     implementation(project(":omnicraft-paper-legacy"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.0")
-    compileOnly("io.papermc.paper:paper-api:26.1.2.build.+")
+    compileOnly("io.papermc.paper:paper-api:26.1.2.build.74-stable")
 }
 
 kotlin {

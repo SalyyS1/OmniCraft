@@ -118,6 +118,12 @@ class MenuService(
             "#d6f7ff• Right: craft x${recipe.craft.rightAmount}",
             "#d6f7ff• Shift: craft max"
         )))
+        inv.setItem(47, named(Material.HOPPER, "#7cf5ffAutoCraft", listOf(
+            "#d6f7ff• Left: queue x${recipe.craft.leftAmount}",
+            "#d6f7ff• Right: queue x${recipe.craft.rightAmount}",
+            "#d6f7ff• Shift: queue up to the server cap",
+            "#8ea3b0› Uses inventory first, then enabled intermediate recipes."
+        )))
         inv.setItem(48, named(Material.HOPPER, "#7cf5ffMissing Materials", missingLore(check.missing, recipe)))
         inv.setItem(49, named(Material.ARROW, "#d6f7ffBack", listOf("#8ea3b0Return to category.")))
         player.openInventory(inv)

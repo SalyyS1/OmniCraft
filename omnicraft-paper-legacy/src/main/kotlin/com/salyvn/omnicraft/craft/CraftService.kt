@@ -4,17 +4,19 @@ import com.salyvn.omnicraft.OmniCraftPlugin
 import com.salyvn.omnicraft.config.ConfigService
 import com.salyvn.omnicraft.core.CraftCalculator
 import com.salyvn.omnicraft.core.CraftClickMode
+import com.salyvn.omnicraft.core.CraftDurationPolicy
+import com.salyvn.omnicraft.core.CraftJobStopReason
 import com.salyvn.omnicraft.core.CraftLocks
+import com.salyvn.omnicraft.core.CraftMatcher
 import com.salyvn.omnicraft.core.CraftRecipe
 import com.salyvn.omnicraft.core.ExtractionMode
+import com.salyvn.omnicraft.core.RecipeKey
 import com.salyvn.omnicraft.hook.HookService
 import com.salyvn.omnicraft.item.ItemAdapter
 import com.salyvn.omnicraft.util.Text
 import org.bukkit.GameMode
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
-import org.bukkit.scheduler.BukkitTask
-import java.util.UUID
 import kotlin.random.Random
 
 class CraftService(
@@ -25,8 +27,11 @@ class CraftService(
     private val audit: AuditService
 ) {
     private val calculator = CraftCalculator()
-    private val locks = CraftLocks()
-    private val countdowns = mutableMapOf<UUID, BukkitTask>()
+    private val speedProvider = CraftSpeedProvider(plugin, hooks)
+    private val jobs = CraftJobService(plugin)
+    private val locks = CraftLocks(plugin.config.getLong("anti-dupe.lock-timeout-ms", 10_000).coerceAtLeast(1))
+
+    fun isBusy(playerId: java.util.UUID): Boolean = jobs.activeJob(playerId) != null
 
     fun craft(player: Player, recipe: CraftRecipe, mode: CraftClickMode, reopen: () -> Unit = {}) {
         if (!locks.throttle(player.uniqueId, recipe.craft.cooldownMillis)) {
@@ -37,59 +42,124 @@ class CraftService(
             player.sendMessage(Text.c(config.message("errors.blocked-gamemode", "#ff6961You cannot craft in this game mode.")))
             return
         }
-        if (!locks.tryLock(player.uniqueId, recipe.id)) {
+        val recipeKey = RecipeKey.of(recipe)
+        if (!locks.tryLock(player.uniqueId, recipeKey)) {
+            player.sendMessage(Text.c(config.message("errors.locked", "#ff6961This recipe is already processing.")))
+            return
+        }
+        if (jobs.activeJob(player.uniqueId) != null) {
+            locks.unlock(player.uniqueId, recipeKey)
             player.sendMessage(Text.c(config.message("errors.locked", "#ff6961This recipe is already processing.")))
             return
         }
         if (recipe.craftTime.enabled && !player.hasPermission("omnicraft.bypass.craft-time")) {
-            startCountdown(player, recipe, mode, reopen)
+            val initialCheck = check(player, recipe)
+            val requested = calculator.requestedAmount(recipe, mode, initialCheck.craftableAmount)
+            if (!recipe.options.enabled || !initialCheck.allowed || requested <= 0) {
+                locks.unlock(player.uniqueId, recipeKey)
+                player.sendMessage(Text.c(config.message("errors.requirements", "#ff6961You do not meet the requirements.")))
+                return
+            }
+            val duration = CraftDurationPolicy.calculate(recipe.craftTime, requested, speedProvider.modifiers(player, recipe))
+            startCountdown(player, recipe, mode, duration.effectiveSeconds, reopen)
             return
         }
         runTransaction(player, recipe, mode, reopen)
     }
 
     fun shutdown() {
-        countdowns.values.forEach { it.cancel() }
-        countdowns.clear()
+        jobs.shutdown()
         locks.clear()
     }
 
-    fun cancelPlayer(playerId: UUID) {
-        countdowns.remove(playerId)?.cancel()
+    fun cancelPlayer(playerId: java.util.UUID, reason: CraftJobStopReason = CraftJobStopReason.PLAYER_CANCELLED) {
+        jobs.cancel(playerId, reason)
         locks.unlockPlayer(playerId)
     }
 
-    private fun startCountdown(player: Player, recipe: CraftRecipe, mode: CraftClickMode, reopen: () -> Unit) {
-        var remaining = recipe.craftTime.seconds.coerceAtLeast(1)
-        player.closeInventory()
-        val task = plugin.server.scheduler.runTaskTimer(plugin, Runnable {
-            if (!player.isOnline) {
-                cancelCountdown(player.uniqueId, recipe.id)
-                return@Runnable
+    fun cancelOnMove(playerId: java.util.UUID) {
+        val job = jobs.activeJob(playerId) ?: return
+        val recipe = config.recipe(job.recipeKey.categoryId, job.recipeKey.recipeId) ?: return cancelPlayer(playerId, CraftJobStopReason.MOVED)
+        if (recipe.craftTime.cancelOnMove) cancelPlayer(playerId, CraftJobStopReason.MOVED)
+    }
+
+    fun cancelOnLogout(playerId: java.util.UUID) {
+        val job = jobs.activeJob(playerId) ?: return
+        val recipe = config.recipe(job.recipeKey.categoryId, job.recipeKey.recipeId) ?: return cancelPlayer(playerId, CraftJobStopReason.LOGOUT)
+        if (recipe.craftTime.cancelOnLogout) cancelPlayer(playerId, CraftJobStopReason.LOGOUT)
+    }
+
+    /** Runs one exact queue node through the same transaction coordinator as GUI crafting. */
+    fun executeAutomated(player: Player, recipe: CraftRecipe, crafts: Int, completed: (Boolean) -> Unit): Boolean {
+        if (plugin.config.getBoolean("anti-dupe.block-creative", true) && player.gameMode in setOf(GameMode.CREATIVE, GameMode.SPECTATOR)) return false
+        if (crafts <= 0 || !locks.tryLock(player.uniqueId, RecipeKey.of(recipe))) return false
+        if (recipe.craftTime.enabled && !player.hasPermission("omnicraft.bypass.craft-time")) {
+            val check = check(player, recipe)
+            if (!recipe.options.enabled || !check.allowed || check.craftableAmount < crafts) {
+                locks.unlock(player.uniqueId, RecipeKey.of(recipe))
+                completed(false)
+                return true
             }
-            if (remaining <= 0) {
-                countdowns.remove(player.uniqueId)?.cancel()
-                runTransaction(player, recipe, mode, reopen)
-                return@Runnable
+            val duration = CraftDurationPolicy.calculate(recipe.craftTime, crafts, speedProvider.modifiers(player, recipe))
+            startCountdown(player, recipe, CraftClickMode.LEFT, duration.effectiveSeconds, {}, crafts, completed)
+        } else {
+            runTransaction(player, recipe, CraftClickMode.LEFT, {}, crafts, completed)
+        }
+        return true
+    }
+
+    private fun startCountdown(
+        player: Player,
+        recipe: CraftRecipe,
+        mode: CraftClickMode,
+        seconds: Int,
+        reopen: () -> Unit,
+        requestedCrafts: Int? = null,
+        completed: (Boolean) -> Unit = {}
+    ) {
+        player.closeInventory()
+        val requested = requestedCrafts ?: calculator.requestedAmount(recipe, mode, check(player, recipe).craftableAmount).coerceAtLeast(1)
+        val job = jobs.start(player.uniqueId, RecipeKey.of(recipe), requested, seconds, tick@{ remaining ->
+            if (!player.isOnline) {
+                cancelPlayer(player.uniqueId, CraftJobStopReason.LOGOUT)
+                return@tick
             }
             player.showTitle(net.kyori.adventure.title.Title.title(
                 Text.c(config.message("titles.crafting", "#7cf5ffCrafting")),
                 Text.c(config.message("titles.countdown", "#d6f7ffFinishing in {seconds}s").replace("{seconds}", remaining.toString()))
             ))
-            remaining--
-        }, 0L, 20L)
-        countdowns[player.uniqueId] = task
+        }, {
+            runTransaction(player, recipe, mode, reopen, requested, completed)
+        }, {
+            locks.unlock(player.uniqueId, RecipeKey.of(recipe))
+            completed(false)
+            player.sendMessage(Text.c(config.message("titles.cancelled", "#ff6961Craft cancelled")))
+            plugin.server.scheduler.runTask(plugin, Runnable { reopen() })
+        })
+        if (job == null) {
+            locks.unlock(player.uniqueId, RecipeKey.of(recipe))
+            completed(false)
+            player.sendMessage(Text.c(config.message("errors.locked", "#ff6961This recipe is already processing.")))
+        }
     }
 
-    private fun cancelCountdown(playerId: UUID, recipeId: String) {
-        countdowns.remove(playerId)?.cancel()
-        locks.unlock(playerId, recipeId)
-    }
-
-    private fun runTransaction(player: Player, recipe: CraftRecipe, mode: CraftClickMode, reopen: () -> Unit) {
+    private fun runTransaction(
+        player: Player,
+        recipe: CraftRecipe,
+        mode: CraftClickMode,
+        reopen: () -> Unit,
+        requestedCrafts: Int? = null,
+        completed: (Boolean) -> Unit = {}
+    ) {
+        var usageReservation: UsageService.Reservation? = null
+        var reservedAmount = 0
+        var moneyWithdrawn = false
+        var committed = false
+        var chargedMoney = 0.0
+        var inventoryBeforeMutation: Array<ItemStack?>? = null
         try {
             val check = check(player, recipe)
-            val crafts = calculator.requestedAmount(recipe, mode, check.craftableAmount)
+            val crafts = requestedCrafts ?: calculator.requestedAmount(recipe, mode, check.craftableAmount)
             if (!recipe.options.enabled) {
                 audit.record(player, recipe, 0, "fail", "disabled")
                 player.sendMessage(Text.c(config.message("errors.recipe-disabled", "#ff6961This recipe is disabled.")))
@@ -100,21 +170,63 @@ class CraftService(
                 player.sendMessage(Text.c(config.message("errors.requirements", "#ff6961You do not meet the requirements.")))
                 return
             }
-            if (!usage.allowed(player, recipe, crafts)) {
+            val reservation = usage.reserve(player, recipe, crafts) ?: run {
                 audit.record(player, recipe, crafts, "fail", "limit")
                 player.sendMessage(Text.c(config.message("errors.limit", "#ff6961Craft limit reached.")))
                 return
             }
+            usageReservation = reservation
+            reservedAmount = crafts
 
             val inventory = ItemAdapter.inventoryEntries(player.inventory.storageContents)
-            val plan = calculator.selectionPlan(recipe, inventory, crafts)
+            val quote = calculator.quote(recipe, inventory, crafts, hooks.balance(player))
+            if (!quote.isExecutable || quote.allowedCrafts != crafts) {
+                audit.record(player, recipe, crafts, "fail", "allocation")
+                player.sendMessage(Text.c(config.message("errors.requirements", "#ff6961You do not meet the requirements.")))
+                usage.release(reservation)
+                return
+            }
+            val plan = quote.allocation
+            inventoryBeforeMutation = player.inventory.storageContents.map { it?.clone() }.toTypedArray()
             val removed = mutableListOf<Pair<Int, ItemStack>>()
             val extractedEnchants = mutableListOf<ExtractedAdvancedEnchant>()
             val keptEnchantGroups = mutableListOf<List<ExtractedAdvancedEnchant>>()
-            val chargedMoney = recipe.requirements.money * crafts
-            for ((_, entries) in plan) {
+            chargedMoney = quote.totalMoney
+            val output = outputStacks(recipe, crafts, emptyList())
+            val conservativeKeepSlots = 0
+            val projectedStorage = player.inventory.storageContents.map { it?.clone() }.toTypedArray()
+            plan.values.flatten().forEach { entry ->
+                projectedStorage[entry.slot]?.let { stack ->
+                    stack.amount -= entry.amount
+                    if (stack.amount <= 0) projectedStorage[entry.slot] = null
+                }
+            }
+            if (output == null || !hasOutputCapacity(projectedStorage, output, conservativeKeepSlots)) {
+                audit.record(player, recipe, crafts, "fail", "inventory-full")
+                player.sendMessage(Text.c(config.message("errors.inventory-full", "#ff6961Inventory full. Craft cancelled.")))
+                usage.release(reservation)
+                return
+            }
+            for ((ingredientId, entries) in plan) {
+                val ingredient = recipe.ingredients.firstOrNull { it.id == ingredientId }
+                if (ingredient == null) {
+                    audit.record(player, recipe, crafts, "fail", "invalid-allocation")
+                    usage.release(reservation)
+                    return
+                }
                 for (entry in entries) {
-                    val stack = player.inventory.getItem(entry.slot) ?: continue
+                    val stack = player.inventory.getItem(entry.slot)
+                    val currentEntry = stack?.let { ItemAdapter.inventoryEntries(arrayOf(it)).firstOrNull() }
+                    if (stack == null || stack.amount < entry.amount || currentEntry == null ||
+                        !CraftMatcher().matches(ingredient.item, currentEntry) ||
+                        currentEntry.key != entry.key || currentEntry.risk != entry.risk
+                    ) {
+                        rollback(player, removed)
+                        audit.record(player, recipe, crafts, "rollback", "stale-inventory")
+                        player.sendMessage(Text.c(config.message("errors.requirements", "#ff6961You do not meet the requirements.")))
+                        usage.release(reservation)
+                        return
+                    }
                     val clone = stack.clone()
                     clone.amount = entry.amount
                     removed += entry.slot to clone
@@ -129,27 +241,31 @@ class CraftService(
                 rollback(player, removed)
                 audit.record(player, recipe, crafts, "rollback", "money")
                 player.sendMessage(Text.c(config.message("errors.requirements", "#ff6961You do not meet the requirements.")))
+                usage.release(reservation)
                 return
             }
+            moneyWithdrawn = true
 
-            val output = outputStacks(recipe, crafts, keptEnchantGroups)
-            if (output == null) {
+            val enrichedOutput = outputStacks(recipe, crafts, keptEnchantGroups)
+            if (enrichedOutput == null) {
                 rollback(player, removed)
-                hooks.deposit(player, chargedMoney)
+                plugin.pendingRefunds.refundOrQueue(player, chargedMoney)
                 audit.record(player, recipe, crafts, "rollback", "output-hook")
                 player.sendMessage(Text.c(config.message("errors.missing-hook", "#ff6961Required hook is missing: {hook}").replace("{hook}", "MMOItems")))
+                usage.release(reservation)
                 return
             }
-            val leftover = player.inventory.addItem(*output.toTypedArray())
+            val leftover = player.inventory.addItem(*enrichedOutput.toTypedArray())
             if (leftover.isNotEmpty()) {
-                rollback(player, removed)
-                hooks.deposit(player, chargedMoney)
+                player.inventory.storageContents = inventoryBeforeMutation
+                plugin.pendingRefunds.refundOrQueue(player, chargedMoney)
                 audit.record(player, recipe, crafts, "rollback", "inventory-full")
                 player.sendMessage(Text.c(config.message("errors.inventory-full", "#ff6961Inventory full. Craft cancelled.")))
+                usage.release(reservation)
                 return
             }
 
-            usage.record(player, recipe, crafts)
+            committed = true
             handleAdvancedEnchantExtraction(player, recipe, extractedEnchants)
             audit.record(player, recipe, crafts, "success")
             if (recipe.options.rareBroadcast && plugin.config.getBoolean("history.log-rare-recipes", true)) {
@@ -162,8 +278,18 @@ class CraftService(
             player.sendMessage(Text.c(config.message("success.crafted", "#71f79fCrafted {amount}x {item}.")
                 .replace("{amount}", crafts.toString())
                 .replace("{item}", recipe.displayName)))
+        } catch (exception: Exception) {
+            if (!committed) {
+                inventoryBeforeMutation?.let { player.inventory.storageContents = it }
+                if (moneyWithdrawn) plugin.pendingRefunds.refundOrQueue(player, chargedMoney)
+                usageReservation?.let { usage.release(it) }
+                runCatching { audit.record(player, recipe, 0, "rollback", "exception") }
+            }
+            plugin.logger.severe("craft transaction exception player=${player.name} recipe=${recipe.categoryId}:${recipe.id}: ${exception.message}")
         } finally {
-            locks.unlock(player.uniqueId, recipe.id)
+            runCatching { completed(committed) }
+                .onFailure { plugin.logger.warning("craft completion callback failed: ${it.message}") }
+            locks.unlock(player.uniqueId, RecipeKey.of(recipe))
             plugin.server.scheduler.runTask(plugin, Runnable { reopen() })
         }
     }
@@ -200,8 +326,41 @@ class CraftService(
         plugin.logger.warning("craft rollback player=${player.name}")
     }
 
+    private fun hasOutputCapacity(storageContents: Array<ItemStack?>, output: List<ItemStack>, reservedSeparateSlots: Int = 0): Boolean {
+        val free = storageContents.map { it?.clone() }.toMutableList()
+        if (reservedSeparateSlots > 0) {
+            val emptySlots = free.count { it == null || it.type.isAir }
+            if (emptySlots < reservedSeparateSlots) return false
+        }
+        for (stack in output) {
+            var remaining = stack.amount
+            for (index in free.indices) {
+                val current = free[index] ?: continue
+                if (!current.isSimilar(stack)) continue
+                val room = (current.maxStackSize - current.amount).coerceAtLeast(0)
+                val moved = minOf(room, remaining)
+                current.amount += moved
+                remaining -= moved
+                if (remaining == 0) break
+            }
+            for (index in free.indices) {
+                if (remaining == 0) break
+                if (free[index] != null && !free[index]!!.type.isAir) continue
+                val moved = minOf(stack.maxStackSize.coerceAtLeast(1), remaining)
+                free[index] = stack.clone().apply { amount = moved }
+                remaining -= moved
+            }
+            if (remaining > 0) return false
+        }
+        return true
+    }
+
     private fun outputStacks(recipe: CraftRecipe, crafts: Int, keptEnchantGroups: List<List<ExtractedAdvancedEnchant>>): List<ItemStack>? {
-        var remaining = recipe.output.amount * crafts
+        var remaining = try {
+            Math.multiplyExact(recipe.output.amount, crafts)
+        } catch (_: ArithmeticException) {
+            return null
+        }
         val base = ItemAdapter.tryFromCraftItem(recipe.output, 1) ?: return null
         val maxStack = base.maxStackSize.coerceAtLeast(1)
         val stacks = mutableListOf<ItemStack>()

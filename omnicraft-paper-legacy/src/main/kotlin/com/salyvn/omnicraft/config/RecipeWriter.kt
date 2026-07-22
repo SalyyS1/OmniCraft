@@ -36,6 +36,9 @@ class RecipeWriter {
         yaml.set("craft-time.seconds", recipe.craftTime.seconds)
         yaml.set("craft-time.cancel-on-move", recipe.craftTime.cancelOnMove)
         yaml.set("craft-time.cancel-on-logout", recipe.craftTime.cancelOnLogout)
+        yaml.set("craft-time.quantity-scaling", recipe.craftTime.quantityScaling.name)
+        yaml.set("craft-time.minimum-seconds", recipe.craftTime.minimumSeconds)
+        yaml.set("craft-time.maximum-seconds", recipe.craftTime.maximumSeconds)
         yaml.set("extraction.enchant", recipe.extraction.enchant.name)
         yaml.set("extraction.gemstone", recipe.extraction.gemstone.name)
         yaml.set("extraction.level", recipe.extraction.level.name)
@@ -46,6 +49,8 @@ class RecipeWriter {
         yaml.set("options.hidden", recipe.options.hidden)
         yaml.set("options.rare-broadcast", recipe.options.rareBroadcast)
         recipe.options.sourceHints.forEach { (key, value) -> yaml.set("options.source-hints.$key", value) }
+        yaml.set("auto-craft.enabled", recipe.options.sourceHints["auto-craft.enabled"]?.toBooleanStrictOrNull() ?: false)
+        yaml.set("auto-craft.priority", recipe.options.sourceHints["auto-craft.priority"]?.toIntOrNull() ?: 0)
 
         saveAtomic(file, yaml)
     }

@@ -5,6 +5,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 class CraftCalculator(private val matcher: CraftMatcher = CraftMatcher()) {
+    private val allocationPlanner = CraftAllocationPlanner(matcher)
     fun check(
         recipe: CraftRecipe,
         inventory: List<InventoryEntry>,
@@ -13,28 +14,20 @@ class CraftCalculator(private val matcher: CraftMatcher = CraftMatcher()) {
         money: Double,
         deniedConditions: List<String>
     ): CraftCheck {
-        val missing = linkedMapOf<String, Int>()
-        var maxCrafts = Int.MAX_VALUE
-
-        for (ingredient in recipe.ingredients) {
-            val available = inventory
-                .filter { matcher.matches(ingredient.item, it) }
-                .sumOf { max(0, it.amount) }
-            val possible = available / ingredient.requiredAmount
-            maxCrafts = min(maxCrafts, possible)
-            if (available < ingredient.requiredAmount) {
-                missing[ingredient.id] = ingredient.requiredAmount - available
-            }
-        }
-
-        if (recipe.ingredients.isEmpty()) {
-            maxCrafts = 0
-        }
+        val missing = missingForOneCraft(recipe, inventory)
+        val maxCrafts = maximumMaterialCrafts(recipe, inventory)
 
         val levelMissing = max(0, recipe.requirements.level - level)
-        val moneyMissing = max(0.0, recipe.requirements.money - money)
+        val unitMoney = recipe.requirements.money
+        val validMoney = unitMoney.isFinite() && unitMoney >= 0.0
+        val moneyMissing = if (validMoney) max(0.0, unitMoney - money) else Double.POSITIVE_INFINITY
+        val moneyCrafts = when {
+            !validMoney || !money.isFinite() || money < 0.0 -> 0
+            unitMoney == 0.0 -> Int.MAX_VALUE
+            else -> floor(money / unitMoney).coerceAtMost(Int.MAX_VALUE.toDouble()).toInt()
+        }
         val finalCrafts = if (hasPermission && levelMissing <= 0 && moneyMissing <= 0.0 && deniedConditions.isEmpty()) {
-            max(0, maxCrafts)
+            min(maxCrafts, moneyCrafts).coerceAtLeast(0)
         } else {
             0
         }
@@ -55,29 +48,51 @@ class CraftCalculator(private val matcher: CraftMatcher = CraftMatcher()) {
             CraftClickMode.RIGHT -> recipe.craft.rightAmount
             CraftClickMode.SHIFT -> min(availableCrafts, recipe.craft.shiftHardCap)
         }
-        return min(requested, availableCrafts).coerceAtLeast(0)
+        return min(requested.coerceAtLeast(0), availableCrafts.coerceAtLeast(0))
     }
 
     fun selectionPlan(recipe: CraftRecipe, inventory: List<InventoryEntry>, crafts: Int): Map<String, List<InventoryEntry>> {
-        val plan = linkedMapOf<String, List<InventoryEntry>>()
-        for (ingredient in recipe.ingredients) {
-            var remaining = ingredient.requiredAmount * crafts
-            val picked = mutableListOf<InventoryEntry>()
-            val candidates = inventory
-                .filter { matcher.matches(ingredient.item, it) }
-                .sortedWith(compareBy<InventoryEntry> { it.risk.enchantCount + it.risk.gemstoneCount + it.risk.upgradeLevel }
-                    .thenBy { it.risk.enchantCount }
-                    .thenBy { it.risk.gemstoneCount }
-                    .thenBy { it.risk.upgradeLevel })
+        return (allocationPlanner.allocate(recipe, inventory, crafts) as? CraftAllocationResult.Success)
+            ?.allocations
+            ?: emptyMap()
+    }
 
-            for (entry in candidates) {
-                if (remaining <= 0) break
-                val take = min(entry.amount, remaining)
-                picked += entry.copy(amount = take)
-                remaining -= take
-            }
-            plan[ingredient.id] = picked
+    fun quote(recipe: CraftRecipe, inventory: List<InventoryEntry>, requestedCrafts: Int, money: Double): CraftQuote {
+        val key = RecipeKey.of(recipe)
+        if (requestedCrafts <= 0) return CraftQuote(key, requestedCrafts, 0, 0.0, emptyMap(), CraftQuoteFailure.INVALID_QUANTITY)
+        val check = check(recipe, inventory, true, Int.MAX_VALUE, money, emptyList())
+        val allowed = min(requestedCrafts, check.craftableAmount)
+        val allocation = allocationPlanner.allocate(recipe, inventory, allowed)
+        val totalMoney = recipe.requirements.money * allowed
+        val failure = when {
+            !totalMoney.isFinite() || totalMoney < 0.0 -> CraftQuoteFailure.INVALID_RECIPE
+            allocation !is CraftAllocationResult.Success -> CraftQuoteFailure.MATERIALS
+            allowed == 0 && recipe.requirements.money > money -> CraftQuoteFailure.MONEY
+            allowed == 0 -> CraftQuoteFailure.MATERIALS
+            else -> null
         }
-        return plan
+        return CraftQuote(key, requestedCrafts, allowed, totalMoney, (allocation as? CraftAllocationResult.Success)?.allocations.orEmpty(), failure)
+    }
+
+    private fun missingForOneCraft(recipe: CraftRecipe, inventory: List<InventoryEntry>): Map<String, Int> {
+        return when (val result = allocationPlanner.allocate(recipe, inventory, 1)) {
+            is CraftAllocationResult.Insufficient -> mapOf(result.ingredientId to result.missingAmount)
+            else -> emptyMap()
+        }
+    }
+
+    private fun maximumMaterialCrafts(recipe: CraftRecipe, inventory: List<InventoryEntry>): Int {
+        if (recipe.ingredients.isEmpty() || recipe.output.amount <= 0 || inventory.any { it.amount < 0 }) return 0
+        val roughUpperBound = recipe.ingredients.minOfOrNull { ingredient ->
+            if (ingredient.requiredAmount <= 0) return 0
+            inventory.asSequence().filter { matcher.matches(ingredient.item, it) }.sumOf { it.amount.coerceAtLeast(0) } / ingredient.requiredAmount
+        } ?: return 0
+        var low = 0
+        var high = roughUpperBound
+        while (low < high) {
+            val candidate = low + (high - low + 1) / 2
+            if (allocationPlanner.allocate(recipe, inventory, candidate) is CraftAllocationResult.Success) low = candidate else high = candidate - 1
+        }
+        return low
     }
 }

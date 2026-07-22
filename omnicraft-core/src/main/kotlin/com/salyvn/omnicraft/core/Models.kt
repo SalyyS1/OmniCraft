@@ -23,6 +23,29 @@ data class CraftRecipe(
     val options: RecipeOptions = RecipeOptions()
 )
 
+/**
+ * Stable identity for a recipe outside configuration and GUI display objects.
+ * IDs are normalized so lock and future job keys cannot diverge only by case.
+ */
+data class RecipeKey private constructor(
+    val categoryId: String,
+    val recipeId: String
+) {
+    override fun toString(): String = "$categoryId:$recipeId"
+
+    companion object {
+        fun of(categoryId: String, recipeId: String): RecipeKey {
+            val canonicalCategory = categoryId.trim().lowercase()
+            val canonicalRecipe = recipeId.trim().lowercase()
+            require(canonicalCategory.isNotEmpty()) { "categoryId must not be blank" }
+            require(canonicalRecipe.isNotEmpty()) { "recipeId must not be blank" }
+            return RecipeKey(canonicalCategory, canonicalRecipe)
+        }
+
+        fun of(recipe: CraftRecipe): RecipeKey = of(recipe.categoryId, recipe.id)
+    }
+}
+
 data class CraftItem(
     val mode: ItemMode,
     val material: String,
@@ -67,8 +90,16 @@ data class CraftTime(
     val enabled: Boolean = false,
     val seconds: Int = 0,
     val cancelOnMove: Boolean = false,
-    val cancelOnLogout: Boolean = true
+    val cancelOnLogout: Boolean = true,
+    val quantityScaling: CraftQuantityScaling = CraftQuantityScaling.LINEAR,
+    val minimumSeconds: Int = 1,
+    val maximumSeconds: Int = 3_600
 )
+
+enum class CraftQuantityScaling {
+    FIXED,
+    LINEAR
+}
 
 data class ExtractionPolicy(
     val enchant: ExtractionMode = ExtractionMode.DESTROY,

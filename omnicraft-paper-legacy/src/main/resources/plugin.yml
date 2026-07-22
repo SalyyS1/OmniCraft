@@ -10,6 +10,7 @@ softdepend:
   - AdvancedEnchantments
   - Vault
   - PlaceholderAPI
+  - AuraSkills
   - OmniGemStone
   - OmniEnchants
   - OmniTooltips
@@ -41,3 +42,5 @@ permissions:
     default: op
   omnicraft.bypass.craft-time:
     default: op
+  omnicraft.auto-craft:
+    default: true
