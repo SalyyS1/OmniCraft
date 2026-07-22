@@ -113,6 +113,16 @@ class ConfigService(private val plugin: OmniCraftPlugin) {
                 recipe.station.material?.let { material ->
                     if (Material.matchMaterial(material) == null) issues += "Recipe '${category.id}:${recipe.id}' station material '$material' is invalid"
                 }
+                recipe.catalyst?.let { catalyst ->
+                    if (catalyst.item.mode == ItemMode.VANILLA && Material.matchMaterial(catalyst.item.material) == null) {
+                        issues += "Recipe '${category.id}:${recipe.id}' catalyst material '${catalyst.item.material}' is invalid"
+                    }
+                }
+                recipe.outcome.byproduct?.let { byproduct ->
+                    if (byproduct.mode == ItemMode.VANILLA && Material.matchMaterial(byproduct.material) == null) {
+                        issues += "Recipe '${category.id}:${recipe.id}' byproduct material '${byproduct.material}' is invalid"
+                    }
+                }
                 if (recipe.extraction.successRate !in 0.0..1.0) issues += "Recipe '${category.id}:${recipe.id}' extraction success rate must be 0..1"
                 if (recipe.output.advancedEnchantments.any { it.id.isBlank() }) issues += "Recipe '${category.id}:${recipe.id}' has blank AdvancedEnchantments id"
                 recipe.auraSkills.skill?.let { skill ->

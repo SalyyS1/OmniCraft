@@ -55,4 +55,19 @@ class AutoCraftPlannerTest {
 
         assertEquals(listOf(RecipeKey.of(source), RecipeKey.of(rawSource), RecipeKey.of(source), RecipeKey.of(target)), result.steps.map { it.recipeKey })
     }
+
+    @Test fun `requires a catalyst while planning the target`() {
+        val catalyst = CraftItem(ItemMode.VANILLA, "BLAZE_POWDER", 1)
+        val target = CraftRecipe(
+            "target", "x", "Target", CraftItem(ItemMode.VANILLA, "STONE", 1),
+            listOf(CraftIngredient("base", CraftItem(ItemMode.VANILLA, "COBBLESTONE", 1), 1)),
+            CraftRequirements(), CraftBehavior(), CraftTime(), ExtractionPolicy(), CraftLimits(),
+            catalyst = CraftCatalyst(catalyst, 1)
+        )
+        val inventory = listOf(InventoryEntry(0, ItemKey(ItemMode.VANILLA, "COBBLESTONE"), 1))
+
+        val result = AutoCraftPlanner().plan(target, 1, listOf(target), inventory)
+
+        assertIs<AutoCraftPlanResult.Failure>(result)
+    }
 }

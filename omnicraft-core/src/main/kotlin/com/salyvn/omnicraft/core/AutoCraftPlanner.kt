@@ -68,7 +68,7 @@ class AutoCraftPlanner(private val matcher: CraftMatcher = CraftMatcher()) {
             if (outputAmount == 0) return "invalid-output:$sourceKey"
             val crafts = ceil(missing.toDouble() / outputAmount.toDouble()).toLong()
             if (crafts !in 1..policy.maxCraftsPerNode.toLong()) return "node-craft-limit"
-            for (ingredient in source.ingredients) {
+            for (ingredient in source.consumedInputs()) {
                 val requiredAmount = ingredient.requiredAmount.toLong() * crafts
                 ensure(ingredient.item, requiredAmount, depth + 1)?.let { return it }
             }
@@ -81,7 +81,7 @@ class AutoCraftPlanner(private val matcher: CraftMatcher = CraftMatcher()) {
 
         val targetKey = RecipeKey.of(target)
         if (!visiting.add(targetKey)) return AutoCraftPlanResult.Failure("cycle:$targetKey")
-        for (ingredient in target.ingredients) {
+        for (ingredient in target.consumedInputs()) {
             ensure(ingredient.item, ingredient.requiredAmount.toLong() * targetCrafts, 0)?.let { return AutoCraftPlanResult.Failure(it) }
         }
         visiting.remove(targetKey)
