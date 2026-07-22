@@ -76,6 +76,7 @@ errors:
   category-not-found: "#ff6961Category not found."
   recipe-not-found: "#ff6961Recipe not found."
   too-fast: "#ff6961Please slow down."
+  server-busy: "#ff6961Crafting is paused while the server is busy."
   blocked-gamemode: "#ff6961You cannot craft in this game mode."
   locked: "#ff6961This recipe is already processing."
   requirements: "#ff6961You do not meet the requirements."

@@ -33,7 +33,17 @@ class CraftService(
 
     fun isBusy(playerId: java.util.UUID): Boolean = jobs.activeJob(playerId) != null
 
+    fun isServerLoadSafe(): Boolean {
+        val minimumTps = plugin.config.getDouble("anti-dupe.minimum-tps", 16.0).coerceIn(1.0, 20.0)
+        val tps = plugin.server.tps.firstOrNull() ?: return true
+        return !tps.isFinite() || tps >= minimumTps
+    }
+
     fun craft(player: Player, recipe: CraftRecipe, mode: CraftClickMode, reopen: () -> Unit = {}) {
+        if (!isServerLoadSafe()) {
+            player.sendMessage(Text.c(config.message("errors.server-busy", "#ff6961Crafting is paused while the server is busy.")))
+            return
+        }
         if (!locks.throttle(player.uniqueId, recipe.craft.cooldownMillis)) {
             player.sendMessage(Text.c(config.message("errors.too-fast", "#ff6961Please slow down.")))
             return
@@ -91,6 +101,7 @@ class CraftService(
 
     /** Runs one exact queue node through the same transaction coordinator as GUI crafting. */
     fun executeAutomated(player: Player, recipe: CraftRecipe, crafts: Int, completed: (Boolean) -> Unit): Boolean {
+        if (!isServerLoadSafe()) return false
         if (plugin.config.getBoolean("anti-dupe.block-creative", true) && player.gameMode in setOf(GameMode.CREATIVE, GameMode.SPECTATOR)) return false
         if (crafts <= 0 || !locks.tryLock(player.uniqueId, RecipeKey.of(recipe))) return false
         if (recipe.craftTime.enabled && !player.hasPermission("omnicraft.bypass.craft-time")) {

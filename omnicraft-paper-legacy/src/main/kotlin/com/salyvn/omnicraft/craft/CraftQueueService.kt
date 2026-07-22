@@ -78,7 +78,7 @@ class CraftQueueService(
                 runs.remove(playerId)
                 return@forEach
             }
-            if (run.committing || craft.isBusy(playerId) || System.nanoTime() < run.nextDispatchNanos) return@forEach
+            if (run.committing || craft.isBusy(playerId) || !craft.isServerLoadSafe() || System.nanoTime() < run.nextDispatchNanos) return@forEach
             val pending = run.steps.firstOrNull() ?: kotlin.run {
                 runs.remove(playerId)
                 player.sendMessage(Text.c("#71f79fAutoCraft completed: ${run.target}"))
