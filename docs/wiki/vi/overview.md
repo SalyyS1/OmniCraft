@@ -77,4 +77,4 @@ AutoCraft bật mặc định nhưng có thể tắt toàn cục bằng `feature
 
 AuraSkills là soft-depend: thiếu AuraSkills không làm OmniCraft lỗi khởi động. Chỉ recipe có block `auraskills` mới yêu cầu plugin này; XP chỉ được gửi sau khi transaction craft đã commit.
 
-Craft có thời gian và AutoCraft đều là online-only: logout, reload hoặc sửa recipe sẽ hủy job trước khi có transaction mới. Không có offline craft hay offline claim.
+Craft có thời gian và AutoCraft đều là online-only: logout, reload hoặc sửa recipe sẽ hủy job trước khi có transaction mới. Không có offline craft hay offline claim. Nếu server restart khi queue đang chờ node mới, người chơi online có thể dùng `/oc autocraft-resume`; queue sẽ được kiểm lại quyền và recipe trước khi chạy. Bất kỳ node nào đang commit lúc restart đều bị cô lập, không bao giờ tự phát lại.

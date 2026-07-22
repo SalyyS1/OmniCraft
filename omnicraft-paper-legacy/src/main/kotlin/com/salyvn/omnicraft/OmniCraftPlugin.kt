@@ -8,6 +8,7 @@ import com.salyvn.omnicraft.craft.UsageService
 import com.salyvn.omnicraft.craft.PendingRefundService
 import com.salyvn.omnicraft.craft.PendingAuraXpService
 import com.salyvn.omnicraft.craft.CraftQueueService
+import com.salyvn.omnicraft.craft.AutoCraftQueueRepository
 import com.salyvn.omnicraft.gui.GuiListener
 import com.salyvn.omnicraft.gui.MenuService
 import com.salyvn.omnicraft.hook.HookService
@@ -35,6 +36,8 @@ open class OmniCraftPlugin : JavaPlugin() {
         private set
     lateinit var craftQueueService: CraftQueueService
         private set
+    lateinit var craftQueueRepository: AutoCraftQueueRepository
+        private set
 
     override fun onEnable() {
         saveDefaultConfig()
@@ -57,7 +60,10 @@ open class OmniCraftPlugin : JavaPlugin() {
             pendingAuraXp.retryOnlinePlayers()
         }, 20L * 60, 20L * 60)
         craftService = CraftService(this, configService, hooks, usageService, auditService)
-        craftQueueService = CraftQueueService(this, configService, craftService)
+        craftQueueRepository = AutoCraftQueueRepository(this)
+        val abandoned = craftQueueRepository.recoverInterruptedRuns()
+        if (abandoned > 0) logger.warning("Quarantined $abandoned interrupted AutoCraft queue(s) after restart")
+        craftQueueService = CraftQueueService(this, configService, craftService, craftQueueRepository)
         menuService = MenuService(configService, craftService, hooks)
 
         val command = OmniCraftCommand(this, configService, menuService, craftService)
@@ -72,10 +78,8 @@ open class OmniCraftPlugin : JavaPlugin() {
     }
 
     override fun onDisable() {
-        if (::craftService.isInitialized) {
-            craftService.shutdown()
-        }
         if (::craftQueueService.isInitialized) craftQueueService.shutdown()
+        if (::craftService.isInitialized) craftService.shutdown()
         logger.info("OmniCraft disabled")
     }
 

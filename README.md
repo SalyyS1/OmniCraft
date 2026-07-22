@@ -31,6 +31,7 @@ Optional hooks: MMOItems, MythicLib, AdvancedEnchantments, Vault, PlaceholderAPI
 | `/oc search <category> <text>` | `omnicraft.use` | Search recipes |
 | `/oc autocraft <category:recipe> [amount]` | `omnicraft.auto-craft` | Run an online-only recursive AutoCraft queue |
 | `/oc autocraft-status` | `omnicraft.auto-craft` | Inspect the active queue |
+| `/oc autocraft-resume` | `omnicraft.auto-craft` | Resume a queue safely paused before a restart |
 | `/oc autocraft-cancel` | `omnicraft.auto-craft` | Cancel the active queue |
 | `/oc reload` | `omnicraft.reload` | Reload plugin files |
 | `/oc validate` | `omnicraft.validate` | Validate recipes and hooks |
@@ -50,7 +51,7 @@ Optional hooks: MMOItems, MythicLib, AdvancedEnchantments, Vault, PlaceholderAPI
 - Editor with cursor item placement, Vanilla/MMOItems browser, ingredient amount controls, output replacement, enable toggle, craft-time toggle, and extraction mode toggle.
 - Optional title countdown before final craft validation.
 - Fast Craft duration policy with permission/PlaceholderAPI modifiers and clamped timing.
-- Online-only AutoCraft: inventory-first recursive planning, deterministic source priority, cycle/depth caps, per-node revalidation, logout/reload cancellation, and one shared dispatcher.
+- Online-only AutoCraft: inventory-first recursive planning, deterministic source priority, cycle/depth caps, per-node revalidation, logout/reload cancellation, and one shared dispatcher. Queues paused before a restart can be resumed explicitly; an interrupted transaction is never replayed.
 - MMOItems output and ingredient matching.
 - AdvancedEnchantments output application and KEEP, DESTROY, EXTRACT handling for consumed upgrade items.
 - Vault money requirements and PlaceholderAPI conditions.

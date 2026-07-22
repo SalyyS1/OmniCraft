@@ -45,6 +45,7 @@
         <tr><td><code>/oc autocraft &lt;recipe&gt; [amount]</code></td><td><code>omnicraft.auto-craft</code></td><td>Chạy queue AutoCraft online.</td></tr>
         <tr><td><code>/oc autocraft-cancel</code></td><td><code>omnicraft.auto-craft</code></td><td>Hủy queue hiện tại.</td></tr>
         <tr><td><code>/oc autocraft-status</code></td><td><code>omnicraft.auto-craft</code></td><td>Xem node còn lại và trạng thái hiện tại.</td></tr>
+        <tr><td><code>/oc autocraft-resume</code></td><td><code>omnicraft.auto-craft</code></td><td>Tiếp tục queue đã dừng an toàn trước khi restart.</td></tr>
         <tr><td><code>/oc reload</code></td><td><code>omnicraft.reload</code></td><td>Đọc lại file.</td></tr>
       </tbody></table></section>
 
@@ -68,7 +69,7 @@ craft-time:
   maximum-seconds: 3600
 limits: { daily: -1, weekly: -1 }
 auto-craft: { enabled: false, priority: 0 }</code></pre>
-        <div class="callout">AutoCraft bật mặc định (có thể tắt bằng <code>features.auto-craft</code>): chỉ bật <code>auto-craft.enabled</code> cho recipe trung gian và dùng <code>/oc autocraft &lt;recipe&gt; [amount]</code>. Queue chạy khi online, ưu tiên inventory, chặn cycle/depth và hủy khi logout/reload.</div>
+        <div class="callout">AutoCraft bật mặc định (có thể tắt bằng <code>features.auto-craft</code>): chỉ bật <code>auto-craft.enabled</code> cho recipe trung gian và dùng <code>/oc autocraft &lt;recipe&gt; [amount]</code>. Queue chạy khi online, ưu tiên inventory, chặn cycle/depth và hủy khi logout/reload. Sau restart, chỉ queue đang chờ mới được người chơi tự tiếp tục qua <code>/oc autocraft-resume</code>; craft đang commit không bao giờ bị phát lại.</div>
       </section>
 
       <section id="integrations" class="canvas searchable"><h2>Tích hợp</h2><div class="grid two">
